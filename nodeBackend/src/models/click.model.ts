@@ -6,7 +6,7 @@ export interface IClick extends Document {
 }
 
 const UserSchema: Schema = new mongoose.Schema({
-    shortUrl: { type: String, required: true},
+    shortUrl: { type: String, required: true, ref: 'Url'},
     accessDate: { type: Date, required: true}
 });
 
