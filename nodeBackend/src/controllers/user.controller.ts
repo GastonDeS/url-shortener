@@ -42,4 +42,15 @@ export class UserController {
             next(error);
         }
     }
+
+    getFullUrlData: RequestHandler = async (req, res, next) => {
+        const shortUrl = req.params.shortUrl;
+
+        try {
+            const urls = await this.urlService.getUrlFullData(shortUrl);
+            return res.send(urls);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

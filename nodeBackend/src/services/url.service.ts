@@ -7,16 +7,19 @@ import { ERRORS } from "../constants/error.constant";
 import { url } from "inspector";
 import UserService from "./user.service";
 import { USER_TYPE } from "../models/user.model";
+import ClickService from "./click.service";
 
 
 class UrlService {
     private static instance: UrlService;
     private redisService: RedisService;
     private userService: UserService;
+    private clickService: ClickService;
 
     constructor() {
         this.redisService = RedisService.getInstance();
         this.userService = UserService.getInstance();
+        this.clickService = ClickService.getInstance();
     }
 
     static getInstance = () => {
@@ -42,21 +45,26 @@ class UrlService {
         return link;
     }
 
+    getUrlFullData = async (shortUrl: string) => {
+        return await this.clickService.getHistogram(shortUrl);
+    }
+
     getUrlsFromUserId = async (userId: string) => {
         return await urlModel.find({userId: userId});
     }
 
     getUrlFromShort = async (shortUrl: string, redis = true) => {
+        let url: string;
         if (redis) {
-            const url = await this.redisService.getFromRedis(shortUrl);
+            url = await this.redisService.getFromRedis(shortUrl);
             if (!url) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
-            return url
         } else {
             const link = await urlModel.findOne({shortUrl});
             if (!link) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
-            return link.url; 
+            url = link.url; 
         }
-           
+        this.clickService.createClick(shortUrl);
+        return url;
     }
 
     renewUrl = async (shortUrl: string) => {

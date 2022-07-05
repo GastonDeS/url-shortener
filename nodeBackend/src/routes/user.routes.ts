@@ -25,5 +25,6 @@ export class UserRoutes {
         this.router.post('/', this.controller.createUser);
         this.router.post('/:userId', userAuthMiddleware, this.controller.updatePlan);
         this.router.get('/:userId/links/', userAuthMiddleware, this.controller.getUrlsFromUser);
+        this.router.get('/link/:shortUrl', userAuthMiddleware, this.controller.getFullUrlData);
     }
 }
