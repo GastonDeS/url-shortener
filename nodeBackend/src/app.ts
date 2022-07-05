@@ -5,6 +5,9 @@ import { UserRoutes } from "./routes/user.routes";
 import { UrlRoutes } from "./routes/url.routes";
 import ErrorHandlerMiddleware from "./middlewares/errorHandler.middleware";
 import RedisService from "./services/redis.service";
+import { AuthRoutes } from "./routes/auth.routes";
+import UserService from "./services/user.service";
+import UserAuthService from "./services/auth.service";
 
 class App {
     public app: Application;
@@ -24,7 +27,7 @@ class App {
     }
 
     private initServices() {
-            
+        UserService.getInstance();
     }
 
     private setConfig() {
@@ -68,6 +71,7 @@ class App {
 
         this.app.use('/v1/users/', new UserRoutes().router);
         this.app.use('/v1/urls/', new UrlRoutes().router);
+        this.app.use('/v1/auth/', new AuthRoutes().router);
 
     }
 }

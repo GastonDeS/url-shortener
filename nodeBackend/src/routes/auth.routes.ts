@@ -1,13 +1,12 @@
 import { Router } from 'express';
 import { urlencoded } from 'body-parser';
 import cors from 'cors';
-import { UrlController } from '../controllers/url.controller';
-import userAuthMiddleware from '../middlewares/userAuth.middleware';
+import { AuthController } from '../controllers/auth.controller';
 
-export class UrlRoutes {
+export class AuthRoutes {
     
     public router: Router = Router();
-    public controller: UrlController = new UrlController();
+    public controller: AuthController = new AuthController();
 
     constructor() {
         this.init();
@@ -22,8 +21,7 @@ export class UrlRoutes {
         );
         this.router.use(cors());
 
-        this.router.post('/', userAuthMiddleware, this.controller.createurl);
-        this.router.get('/:shortUrl', this.controller.getUrlFromShort);
-
+        this.router.get('/login', this.controller.login);
     }
 }
+        

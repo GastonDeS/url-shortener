@@ -1,17 +1,22 @@
 import { FIFTEEN_DAYS } from "../constants/general.constant";
-import urlModel from "../models/url.model";
+import urlModel, { IUrl } from "../models/url.model";
 import RedisService from "./redis.service";
 import {Md5} from "md5-typescript";
 import GenericException from "../exceptions/generic.exception";
 import { ERRORS } from "../constants/error.constant";
+import { url } from "inspector";
+import UserService from "./user.service";
+import { USER_TYPE } from "../models/user.model";
 
 
-export default class UrlService {
+class UrlService {
     private static instance: UrlService;
     private redisService: RedisService;
+    private userService: UserService;
 
     constructor() {
         this.redisService = RedisService.getInstance();
+        this.userService = UserService.getInstance();
     }
 
     static getInstance = () => {
@@ -25,18 +30,33 @@ export default class UrlService {
         if (!shortUrl) {
             shortUrl = this.genShortUrl(url, userId);
         }
+        const user = await this.userService.getUserById(userId);
+        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER_NOT_FOUND);
+
         const link = await urlModel.create({userId, shortUrl, url, labels});
-        await this.redisService.setExpireKeyToRedis(shortUrl, url, FIFTEEN_DAYS);
+        if (user.type === USER_TYPE.PREMIUM) {
+            await this.redisService.setToRedis(shortUrl, url);
+        } else {
+            await this.redisService.setExpireKeyToRedis(shortUrl, url, FIFTEEN_DAYS);
+        }
         return link;
     }
 
-    getUrlFromShort = async (shortUrl: string) => {
-        const link = await urlModel.findOne({shortUrl});
-        if (!link) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
-        return link.url;
-        // const url = await this.redisService.getFromRedis(shortUrl);
-        // if (!url) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
-        // return url;
+    getUrlsFromUserId = async (userId: string) => {
+        return await urlModel.find({userId: userId});
+    }
+
+    getUrlFromShort = async (shortUrl: string, redis = true) => {
+        if (redis) {
+            const url = await this.redisService.getFromRedis(shortUrl);
+            if (!url) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
+            return url
+        } else {
+            const link = await urlModel.findOne({shortUrl});
+            if (!link) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
+            return link.url; 
+        }
+           
     }
 
     renewUrl = async (shortUrl: string) => {
@@ -52,3 +72,5 @@ export default class UrlService {
 
 
 }
+
+export default UrlService;

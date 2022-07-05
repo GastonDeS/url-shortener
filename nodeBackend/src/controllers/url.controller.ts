@@ -12,7 +12,7 @@ export class UrlController {
     }
 
     createurl : RequestHandler = async (req, res, next) => {
-        const userId = req.body.userId;
+        const userId = req.user.id;
         const url = req.body.url;
         const shortUrl = req.body.shortUrl;
         const labels = req.body.labels;
