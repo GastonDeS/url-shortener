@@ -45,3 +45,15 @@ export const Request = styled.div`
     }
   }
 `;
+
+export const Button = styled.button <{primary?: boolean}> `
+  background: ${props => props.primary ? "#D67097" : "white"};
+  color: ${props => props.primary ? "black" : "#D67097"};
+  border-radius:10px;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  font-weight: 100;
+  font-size: 18px;
+  padding: 7px 15px;
+`

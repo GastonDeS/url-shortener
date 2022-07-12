@@ -6,7 +6,7 @@ import { Page, PageContainer, Request, Title } from "../../GlobalStyles"
 function Login() {
   return (
     <Page>
-      <Navbar/>
+      <Navbar isLogged = {false}/>
       <PageContainer>
         <Wrapper>
           <Title>Login</Title>
