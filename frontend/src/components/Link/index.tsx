@@ -3,15 +3,16 @@ import { LinkContainer, LinkDataContainer } from "./styles";
 import click from "../../click.png"
 
 interface LinkProps {
-    name: string;
-    date: string;
-    shortenedUrl: string;
-    clickCount: number;
+    name?: string;
+    date?: string;
+    shortenedUrl?: string;
+    clickCount?: number;
+    isClicked: boolean;
 }
 
-const Link = () => {
+const Link = ({isClicked, ...rest}:LinkProps) => {
     return (
-        <LinkContainer>
+        <LinkContainer clicked={isClicked}>
             <input type= "checkbox"></input>
             <LinkDataContainer>
                 <span> <small>3 ago</small></span>

@@ -52,8 +52,28 @@ export const Button = styled.button <{primary?: boolean}> `
   border-radius:10px;
   text-align: center;
   cursor: pointer;
-  border: none;
-  font-weight: 100;
+  border: 1px solid #D67097;
+  font-weight: 600;
   font-size: 18px;
   padding: 7px 15px;
+  height: fit-content;
+  align-self: center;
+
+  &:hover {
+    background-color: #d67097c9;
+    color: ${props => props.primary ? "black" : "white"};
+  }
+`
+export const Pill = styled.span `
+  background-color: #8a9;
+  text-align: center;
+  border: none;
+  color: black;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  padding: 5px 8px 7px 8px;
+  line-height: 22px;
+  cursor: pointer;
+  border-radius: 16px;
 `
