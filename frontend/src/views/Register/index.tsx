@@ -4,7 +4,7 @@ import { Input, Label, Wrapper } from "./styles";
 import { Page, PageContainer, Request, Title } from "../../GlobalStyles";
 import { useNavigate } from "react-router-dom";
 
-function Login() {
+function Register() {
   let navigate = useNavigate()
 
   return (
@@ -12,14 +12,18 @@ function Login() {
       <Navbar/>
       <PageContainer>
         <Wrapper>
-          <Title>Login</Title>
+          <Title>Register</Title>
+          <Label>Name</Label>
+          <Input/>
           <Label>Email</Label>
           <Input/>
           <Label>Password</Label>
           <Input type="password"/>
+          <Label>Confirm Password</Label>
+          <Input type="password"/>
           <Request>
-            <p>Don't have an account? </p>
-            <button onClick={() => navigate('/register')}>Sign Up</button>
+            <p>Already have an account? </p>
+            <button onClick={() => navigate('/')}>Log In</button>
           </Request>
         </Wrapper>
       </PageContainer>
@@ -27,4 +31,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Register;
