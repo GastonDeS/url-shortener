@@ -1,4 +1,6 @@
 import { RequestHandler } from 'express';
+import { ERRORS } from '../constants/error.constant';
+import GenericException from '../exceptions/generic.exception';
 import UrlService from '../services/url.service';
 import UserService from '../services/user.service';
 
@@ -13,8 +15,14 @@ export class UserController {
     }
 
     createUser : RequestHandler = async (req, res, next) => {
+        const username: string = req.body.username;
+        const email: string = req.body.email;
+        const password: string = req.body.password;
+
         try {
-            const user = await this.userService.createUser(req.body.email, req.body.password);
+            if (!username || !email || !password) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
+
+            const user = await this.userService.createUser(req.body.username, req.body.email, req.body.password);
             return res.status(201).send({user});
         } catch (error) {
             next(error);
