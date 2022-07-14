@@ -7,7 +7,7 @@ import { MainLinksContainer, MainContainer, FilterContainer, DataContainer, Expa
 const Main = () => {
     return (
         <Page>
-            <Navbar isLogged={true} />
+            <Navbar/>
             <PageContainer>
                 <div style={{ display: 'flex', boxSizing: 'border-box', width: '100%', padding: '0 20px', alignItems: 'center', justifyContent: "space-between" }}>
                     <span style={{fontSize: '35px'}}><b>Links</b></span>

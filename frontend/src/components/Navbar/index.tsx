@@ -1,20 +1,10 @@
 import React from "react";
-import { NavContainer, NavTitle, NavButton, ButtonWrapper } from "./styles"
+import { NavContainer, NavTitle } from "./styles"
 
-interface NavProps {
-  isLogged : boolean;
-}
-
-function Navbar( {isLogged}:NavProps ) {
+function Navbar() {
   return (
     <NavContainer>
       <NavTitle>byPS</NavTitle>
-      <ButtonWrapper>
-        {!isLogged && <>
-        <NavButton>Login</NavButton>
-        <NavButton>Register</NavButton>
-        </>}
-      </ButtonWrapper>
     </NavContainer>
   );
 }

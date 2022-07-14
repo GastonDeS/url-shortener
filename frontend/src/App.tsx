@@ -4,6 +4,7 @@ import { ThemeProvider } from 'styled-components';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Login from "./views/Login/index";
 import Main from "./views/Main/index"
+import Register from './views/Register/index';
 
 const theme = {
   colors: {
@@ -24,8 +25,9 @@ function App() {
     <ThemeProvider theme={theme}>
       <BrowserRouter basename={process.env.REACT_APP_CONTEXT}>
         <Routes>
-          <Route path='/login' element={<Login />} />
+          <Route path='/' element={<Login />} />
           <Route path='/main' element={<Main/>} />
+          <Route path='/register' element={<Register/>} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

@@ -1,4 +1,4 @@
-import styled, { createGlobalStyle } from "styled-components";
+import styled from "styled-components";
 
 export const Page = styled.div`
   display: flex;
@@ -63,7 +63,8 @@ export const Button = styled.button <{primary?: boolean}> `
     background-color: #d67097c9;
     color: ${props => props.primary ? "black" : "white"};
   }
-`
+`;
+
 export const Pill = styled.span `
   background-color: #8a9;
   text-align: center;
@@ -76,4 +77,4 @@ export const Pill = styled.span `
   line-height: 22px;
   cursor: pointer;
   border-radius: 16px;
-`
+`;
