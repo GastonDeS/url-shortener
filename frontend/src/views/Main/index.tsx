@@ -2,7 +2,10 @@ import '@coreui/coreui/dist/css/coreui.min.css'
 import { PageContainer, Page, Button, Pill } from "../../GlobalStyles"
 import Navbar from "../../components/Navbar"
 import Link from "../../components/Link"
-import { MainLinksContainer, MainContainer, FilterContainer, DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader } from "./styles"
+import {
+    MainLinksContainer, MainContainer, FilterContainer,
+    DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader, SelectsContainer, CustomSelectContainer
+} from "./styles"
 import { CCollapse, CCard, CCardBody } from '@coreui/react'
 import { useState } from "react"
 import ReactModal from 'react-modal'
@@ -16,13 +19,17 @@ import {
     Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import Select from 'react-select';
+import { DateSelectStyle, TagSelectStyle } from './SelectData/selectStyles'
+import { colourOptions } from './SelectData/data'
+import { modalStyle } from './ModalData/ModalStyle'
+
 
 
 const Main = () => {
 
     const [show, setShow] = useState<boolean>(false);
     const [showFilters, setShowFilters] = useState<boolean>(false);
-
 
     ChartJS.register(
         CategoryScale,
@@ -61,9 +68,10 @@ const Main = () => {
         ],
     };
 
+
     return (
         <Page>
-            <Navbar/>
+            <Navbar />
             <PageContainer>
                 <div style={{ display: 'flex', boxSizing: 'border-box', width: '100%', padding: '0 20px', alignItems: 'center', justifyContent: "space-between" }}>
                     <span style={{ fontSize: '35px' }}><b>Links</b></span>
@@ -75,9 +83,35 @@ const Main = () => {
                     <FilterContainer>
                         <Button primary onClick={() => setShowFilters(!showFilters)}>Filters</Button>
                     </FilterContainer>
-                    {showFilters && <div>AA</div>}
-                    <ReactModal isOpen={showFilters}>
-                        AAAAAAAAAAA
+                    <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle}>
+                        <div style={{
+                            display: 'flex',
+                            textAlign: 'center',
+                            height: '8vh',
+                            margin: '7px 4px',
+                            alignItems: 'center',
+                            justifyContent: 'space-between'
+                        }}>
+                            <span style={{ fontSize: '2em', fontWeight: '600', }}>Filters</span>
+                            <Button onClick={() => setShowFilters(false)}>&#10005;</Button>
+                        </div>
+                        <SelectsContainer>
+                            <CustomSelectContainer>
+                                <span>Tags</span>
+                                <Select
+                                    closeMenuOnSelect={false}
+                                    defaultValue={[colourOptions[0], colourOptions[1]]}
+                                    isMulti
+                                    options={colourOptions}
+                                    styles={TagSelectStyle}
+                                />
+                            </CustomSelectContainer>
+                            <CustomSelectContainer>
+                                <span>Since</span>
+                                <Select options={[{ value: 'date', label: "12/12/12" }, { value: 'date2', label: "13/12/12" }]} styles={DateSelectStyle}/>
+                            </CustomSelectContainer>
+                            <Button primary onClick={() => setShowFilters(false)}>Apply</Button>
+                        </SelectsContainer>
                     </ReactModal>
 
                     <DataContainer>
@@ -108,7 +142,7 @@ const Main = () => {
                             </LinkDiv>
                             <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}><b>Destination:</b> https://gedes.com</span>
                             <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
-                                Tags: <Pill>Tag 1</Pill> <Pill>Tag 2</Pill> <Button>+</Button> </span>
+                                Tags: <Pill>Tag 1</Pill> <Pill>Tag 2</Pill> <Button>&#43;</Button> </span>
                             <div style={{ padding: '30px 0 10px 0' }}>
                                 <Button onClick={async () => {
                                     setShow(!show);
@@ -126,7 +160,7 @@ const Main = () => {
                     </DataContainer>
                 </MainContainer>
             </PageContainer>
-        </Page>
+        </Page >
     )
 }
 

@@ -89,3 +89,17 @@ export const LinkListHeader = styled.div `
     padding: 10px 20px 10px 10px;
     border-bottom: 1px solid #cfa9b8;
 `
+
+export const SelectsContainer = styled.div `
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+`
+
+export const CustomSelectContainer = styled.div `
+    display: flex;
+    flex-direction: column;
+    height: 10vh;
+    justify-content: space-between;
+    margin-bottom: 3vh;
+`
