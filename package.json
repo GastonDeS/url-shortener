@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run build && node nodeBackend/src/server.js",
+    "start": "node nodeBackend/src/server.js",
     "dev": "nodemon nodeBackend/src/server.ts",
     "build": "cd nodeBackend && npm run build && cd .."
   },
