@@ -29,9 +29,12 @@ export const Request = styled.div`
   justify-content: center;
   width: fit-content;
   gap: 0.1rem;
+  margin-top: 0.5em;
 
   p {
     font-size: ${(props) => props.theme.fontSizes.small};
+    margin: 0;
+    color: black;
   }
 
   button {
