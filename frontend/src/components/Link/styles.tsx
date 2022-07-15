@@ -15,5 +15,5 @@ export const LinkDataContainer = styled.div`
     flex-direction: column;
     height: auto;
     width: 280px;
-    padding: 5px 0 5px 20px;
+    padding: 5px 0;
 `
