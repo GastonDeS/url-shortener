@@ -25,13 +25,13 @@ function Login() {
     authService
       .login(email, password)
       .then((result) => {
-        result.hasFailed() ?
-          setError(true) :
+        if (result.hasFailed()) {
+          setError(true)
+        } else {
           auth.login(result.getData())
+          navigate('/main')
+        }
       })
-      .catch(() => {
-        navigate('/')
-      });
   })
 
   return (

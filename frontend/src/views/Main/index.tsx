@@ -12,7 +12,7 @@ const Main = () => {
                 <div style={{ display: 'flex', boxSizing: 'border-box', width: '100%', padding: '0 20px', alignItems: 'center', justifyContent: "space-between" }}>
                     <span style={{fontSize: '35px'}}><b>Links</b></span>
                     <div style={{ display: 'flex', width: 'auto', height: '40px', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Button primary>Upgrade to premium mode</Button>
+                        <Button primary>Upgrade to premium</Button>
                     </div>
                 </div>
                 <MainContainer>
