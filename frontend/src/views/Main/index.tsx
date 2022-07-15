@@ -4,7 +4,8 @@ import Navbar from "../../components/Navbar"
 import Link from "../../components/Link"
 import {
     MainLinksContainer, MainContainer, FilterContainer,
-    DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader, SelectsContainer, CustomSelectContainer
+    DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader, SelectsContainer, CustomSelectContainer, EditLinkContainer,
+    ModalTitle, ModalTitleContainer, TagInput
 } from "./styles"
 import { CCollapse, CCard, CCardBody } from '@coreui/react'
 import ReactModal from 'react-modal'
@@ -21,10 +22,11 @@ import { Bar } from 'react-chartjs-2';
 import Select from 'react-select';
 import { DateSelectStyle, TagSelectStyle } from './SelectData/selectStyles'
 import { colourOptions } from './SelectData/data'
-import { modalStyle } from './ModalData/ModalStyle'
+import { modalStyle, rightModalStyle } from './ModalData/ModalStyle'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../UserContext'
 import { useEffect, useState } from 'react'
+import { QRCodeCanvas } from 'qrcode.react'
 
 
 const Main = () => {
@@ -33,6 +35,11 @@ const Main = () => {
     const currUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
     let navigate = useNavigate();
+    const [show, setShow] = useState<boolean>(false);
+    const [showFilters, setShowFilters] = useState<boolean>(false);
+    const [showQR, setShowQR] = useState<boolean>(false);
+    const [showEditLink, setShowEditLink] = useState<boolean>(false);
+
 
     useEffect(() => {
         if (currUser && currUser !== "") {
@@ -46,8 +53,6 @@ const Main = () => {
         }
     }, [])
 
-    const [show, setShow] = useState<boolean>(false);
-    const [showFilters, setShowFilters] = useState<boolean>(false);
 
     ChartJS.register(
         CategoryScale,
@@ -89,7 +94,7 @@ const Main = () => {
 
     return (
         <Page>
-            <Navbar isAuth={true}/>
+            <Navbar isAuth={true} />
             <PageContainer>
                 <div style={{ display: 'flex', boxSizing: 'border-box', width: '100%', padding: '0 20px', alignItems: 'center', justifyContent: "space-between" }}>
                     <span style={{ fontSize: '35px' }}><b>Links</b></span>
@@ -102,17 +107,10 @@ const Main = () => {
                         <Button primary onClick={() => setShowFilters(!showFilters)}>Filters</Button>
                     </FilterContainer>
                     <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle}>
-                        <div style={{
-                            display: 'flex',
-                            textAlign: 'center',
-                            height: '8vh',
-                            margin: '7px 4px',
-                            alignItems: 'center',
-                            justifyContent: 'space-between'
-                        }}>
-                            <span style={{ fontSize: '2em', fontWeight: '600', }}>Filters</span>
+                        <ModalTitleContainer>
+                            <ModalTitle>Filters</ModalTitle>
                             <Button onClick={() => setShowFilters(false)}>&#10005;</Button>
-                        </div>
+                        </ModalTitleContainer>
                         <SelectsContainer>
                             <CustomSelectContainer>
                                 <span>Tags</span>
@@ -126,10 +124,43 @@ const Main = () => {
                             </CustomSelectContainer>
                             <CustomSelectContainer>
                                 <span>Since</span>
-                                <Select options={[{ value: 'date', label: "12/12/12" }, { value: 'date2', label: "13/12/12" }]} styles={DateSelectStyle}/>
+                                <Select options={[{ value: 'date', label: "12/12/12" }, { value: 'date2', label: "13/12/12" }]} styles={DateSelectStyle} />
                             </CustomSelectContainer>
                             <Button primary onClick={() => setShowFilters(false)}>Apply</Button>
                         </SelectsContainer>
+                    </ReactModal>
+                    <ReactModal isOpen={showQR} style={modalStyle}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <ModalTitleContainer>
+                                <ModalTitle>QR Code</ModalTitle>
+                                <Button onClick={() => setShowQR(false)}>&#10005;</Button>
+                            </ModalTitleContainer>
+                            <div style={{ alignSelf: 'center', justifyContent: 'center', display: 'flex', height: 'fit-content', width: 'fit-content', margin: '15px 0' }}>
+                                <QRCodeCanvas size={324} value="https://app.bitly.com/" fgColor='#D67097' />
+                            </div>
+                            <Button primary onClick={() => setShowQR(false)} style={{ alignSelf: "center" }}>Save</Button>
+                        </div>
+                    </ReactModal>
+                    <ReactModal isOpen={showEditLink} style={rightModalStyle}>
+                        <ModalTitleContainer style={{ backgroundColor: "#D67097", margin: '0', padding: '7px 4px', height: '70px' }}>
+                            <ModalTitle>Edit Link</ModalTitle>
+                            <Button primary onClick={() => setShowEditLink(false)}>&#10005;</Button>
+                        </ModalTitleContainer>
+                        <div style={{display: 'flex', flexDirection: 'column', margin: '15px'}}>
+                            <EditLinkContainer>
+                                <span>Edit Link Title</span>
+                                <input type={"text"}></input>
+                            </EditLinkContainer>
+                            <EditLinkContainer>
+                                <span>Edit Link</span>
+                                <input type={"text"}></input>
+                            </EditLinkContainer>
+                            <EditLinkContainer>
+                                <span>Tags</span>
+                                <TagInput type={"text"}></TagInput>
+                            </EditLinkContainer>
+                            <Button style={{ width: '100%', margin: '0' }} onClick={() => setShowEditLink(false)}> Save </Button>
+                        </div>
                     </ReactModal>
 
                     <DataContainer>
@@ -145,7 +176,7 @@ const Main = () => {
                         <ExpandedLink>
                             <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                                 <span style={{ alignSelf: 'flex-start', margin: '10px', fontSize: '34px', fontWeight: '500' }}>Main Text</span>
-                                <Button>Edit</Button>
+                                <Button onClick={() => setShowEditLink(true)}>Edit</Button>
                             </div>
                             <span style={{ alignSelf: 'flex-start', margin: '10px' }}>3 ago 01:32 by GastonDeSchant</span>
                             <LinkDiv>
@@ -155,10 +186,11 @@ const Main = () => {
                                 </LinkText>
                                 <LinkButtons>
                                     <Button primary>Copy</Button>
-                                    <Button>QR Code</Button>
+                                    <Button onClick={() => setShowQR(true)}>QR Code</Button>
                                 </LinkButtons>
                             </LinkDiv>
-                            <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}><b>Destination:</b> https://gedes.com</span>
+                            <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
+                                <b>Destination: </b><a href="https://www.google.com">https://gedes.com</a></span>
                             <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
                                 Tags: <Pill>Tag 1</Pill> <Pill>Tag 2</Pill> <Button>&#43;</Button> </span>
                             <div style={{ padding: '30px 0 10px 0' }}>
@@ -166,7 +198,7 @@ const Main = () => {
                                     setShow(!show);
                                     await new Promise(r => setTimeout(r, 400));; window.scrollTo(0, document.body.scrollHeight);
                                 }}>
-                                    {show ? '^' : 'v'} {show ? 'Hide' : 'Show'} Stats {show ? '^' : 'v'}
+                                    {show ? "\u2191" : "\u2193"} {show ? 'Hide' : 'Show'} Stats {show ? '\u2191' : '\u2193'}
                                 </Button>
                             </div>
                             <CCollapse style={{ width: '55rem' }} visible={show} >
