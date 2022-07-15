@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import Navbar from "../../components/Navbar/index";
 import { Input, Label, Wrapper } from "./styles";
 import { Page, PageContainer, Request, Title } from "../../GlobalStyles";
 import { useNavigate } from "react-router-dom";
 
 function Register() {
-  let navigate = useNavigate()
+  let navigate = useNavigate();
 
   return (
     <Page>
