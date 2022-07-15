@@ -31,7 +31,7 @@ export class UrlController {
         try {
             if (!shortUrl) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
             const init = Date.now();
-            const url = await this.urlService.getUrlFromShort(shortUrl);
+            const url = await this.urlService.getUrlFromShort(shortUrl, false);
             console.log(`time: ${Date.now() - init}`);
             return res.redirect(url);
         } catch (error) {

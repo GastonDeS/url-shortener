@@ -4,7 +4,6 @@ import RedisService from "./redis.service";
 import {Md5} from "md5-typescript";
 import GenericException from "../exceptions/generic.exception";
 import { ERRORS } from "../constants/error.constant";
-import { url } from "inspector";
 import UserService from "./user.service";
 import { USER_TYPE } from "../models/user.model";
 import ClickService from "./click.service";
