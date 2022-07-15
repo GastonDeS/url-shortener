@@ -10,7 +10,7 @@ export interface IUrl extends Document {
 const UrlSchema: Schema = new mongoose.Schema({
     userId: {type: Schema.Types.ObjectId, ref: 'User'},
     url: {type: String },
-    shortUrl: {type: String, _id: true, unique: true},
+    shortUrl: {type: String, unique: true, index: true},
     labels: {type: [String] },
 });
 

@@ -31,7 +31,7 @@ class ClickService {
                 }
             }
         , {
-            $sort: {count: -1}
+            $sort: {_id: -1}
         }
             ]).exec();
     }

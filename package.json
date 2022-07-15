@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node build/server.js",
-    "dev": "nodemon src/server.ts"
+    "start": "node nodeBackend/src/server.js",
+    "dev": "nodemon nodeBackend/src/server.ts",
+    "build": "cd nodeBackend && npm run build && cd .."
   },
   "keywords": [],
   "author": "",

@@ -7,7 +7,7 @@ import ErrorHandlerMiddleware from "./middlewares/errorHandler.middleware";
 import RedisService from "./services/redis.service";
 import { AuthRoutes } from "./routes/auth.routes";
 import UserService from "./services/user.service";
-import UserAuthService from "./services/auth.service";
+import path from "path";
 
 class App {
     public app: Application;
@@ -72,6 +72,9 @@ class App {
         this.app.use('/v1/users/', new UserRoutes().router);
         this.app.use('/v1/urls/', new UrlRoutes().router);
         this.app.use('/v1/auth/', new AuthRoutes().router);
+        this.app.use('/', (req, res) => {
+            res.sendFile(path.join(__dirname,'templates/index.html'));
+        })
 
     }
 }

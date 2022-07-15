@@ -11,8 +11,13 @@ class UserService {
         return UserService.instance;
     };
 
-    createUser = async (email: string, password: string, type: USER_TYPE = USER_TYPE.PERSON) => {
-        return await userModel.create({email, password, type});
+    createUser = async (
+        username: string,
+        email: string, 
+        password: string, 
+        type: USER_TYPE = USER_TYPE.BASIC
+    ) => {
+        return await userModel.create({username, email, password, type});
     }
 
     updatePlan = async (userId: string) => {

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { urlencoded } from 'body-parser';
 import cors from 'cors';
 import { AuthController } from '../controllers/auth.controller';
+import userBasicAuthMiddleware from '../middlewares/user.basic.middleware';
 
 export class AuthRoutes {
     
@@ -21,7 +22,7 @@ export class AuthRoutes {
         );
         this.router.use(cors());
 
-        this.router.get('/login', this.controller.login);
+        this.router.get('/login', userBasicAuthMiddleware, this.controller.login);
     }
 }
         

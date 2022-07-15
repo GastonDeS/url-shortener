@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const Wrapper = styled.form`
   background: ${(props) => props.theme.colors.first};
-  width: 20vw;
+  width: 25vw;
   padding: 20px 40px;
   border-radius: 12px;
   margin-bottom: 100px;
@@ -55,3 +55,4 @@ export const Error = styled.p`
   margin: 0.35rem 0 0.35rem 0;
   align-self: center;
 `;
+
