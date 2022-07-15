@@ -6,3 +6,10 @@ export const status = {
   PAGE_NOT_FOUND: 404,
   CONFLICT: 409
 }
+
+export const methods = {
+  GET: 0,
+  POST: 1,
+  PUT: 2,
+  DELETE: 3
+}

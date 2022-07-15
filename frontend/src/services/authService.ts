@@ -1,7 +1,8 @@
 import Result from "../models/Result";
-import UserModel from "../models/UserModel";
 import axios from "axios";
 import { User } from "../UserContext";
+import { axiosService } from ".";
+import { methods } from "../assets/constants";
 
 const getBasicToken = (email: string, password: string): string =>{
   const credentials = email + ":" + password;
@@ -15,7 +16,7 @@ export class AuthService {
       let config = {
         headers:  {'x-basic-auth' : getBasicToken(email, password)}
       }
-      const response = await axios.get<User>('http://localhost:8080/v1/auth/login', config);
+      const response = await axiosService.axiosWrapper<User>(methods.GET, 'http://localhost:8080/v1/auth/login', config, {});
       return Result.handleResult(response);
     } catch (error: any) {
       return Result.failure(error.response.status);

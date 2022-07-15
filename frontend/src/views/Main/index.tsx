@@ -7,7 +7,6 @@ import {
     DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader, SelectsContainer, CustomSelectContainer
 } from "./styles"
 import { CCollapse, CCard, CCardBody } from '@coreui/react'
-import { useState } from "react"
 import ReactModal from 'react-modal'
 import {
     Chart as ChartJS,
@@ -23,10 +22,29 @@ import Select from 'react-select';
 import { DateSelectStyle, TagSelectStyle } from './SelectData/selectStyles'
 import { colourOptions } from './SelectData/data'
 import { modalStyle } from './ModalData/ModalStyle'
-
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../UserContext'
+import { useEffect, useState } from 'react'
 
 
 const Main = () => {
+
+    const { login, user } = useAuth();
+    const currUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    let navigate = useNavigate();
+
+    useEffect(() => {
+        if (currUser && currUser !== "") {
+            let newUser = {
+                accessToken: token!,
+                user: JSON.parse(currUser)
+            }
+            login(newUser)
+        } else {
+            navigate('/login')
+        }
+    }, [])
 
     const [show, setShow] = useState<boolean>(false);
     const [showFilters, setShowFilters] = useState<boolean>(false);
@@ -71,7 +89,7 @@ const Main = () => {
 
     return (
         <Page>
-            <Navbar />
+            <Navbar isAuth={true}/>
             <PageContainer>
                 <div style={{ display: 'flex', boxSizing: 'border-box', width: '100%', padding: '0 20px', alignItems: 'center', justifyContent: "space-between" }}>
                     <span style={{ fontSize: '35px' }}><b>Links</b></span>
