@@ -29,7 +29,7 @@ function Login() {
           setError(true)
         } else {
           auth.login(result.getData())
-          navigate('/main')
+          navigate('/')
         }
       })
   })

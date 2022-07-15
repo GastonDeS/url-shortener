@@ -30,20 +30,20 @@ export const ButtonWrapper = styled.div`
 `;
 
 export const NavButton = styled.button`
+  background: ${(props) => props.theme.colors.second};
   color: black;
-  background: none;
-  border: 2px solid black;
+  border-radius:10px;
+  text-align: center;
   cursor: pointer;
-  border-radius: 12px;
-  margin-left: 10px;
-  font-family: ${(props) => props.theme.fonts};
-  font-size: ${(props) => props.theme.fontSizes.small};
-  padding: 0.25em;
-  :hover {
-    background: ${(props) => props.theme.colors.third};
-    transition: ease-in-out 0.2s;
-  }
-  @media (max-width: 990px) {
-    margin-left: 0;
+  border: 1px solid #D67097;
+  font-weight: 600;
+  font-size: 18px;
+  padding: 7px 15px;
+  height: fit-content;
+  align-self: center;
+  margin-top: 0.5em;
+
+  &:hover {
+    color: ${(props) => props.theme.colors.first};
   }
 `;

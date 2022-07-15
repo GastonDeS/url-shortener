@@ -3,11 +3,31 @@ import Navbar from "../../components/Navbar"
 import Link from "../../components/Link"
 import { truncate } from "fs/promises"
 import { MainLinksContainer, MainContainer, FilterContainer, DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader } from "./styles"
+import { useAuth } from "../../UserContext"
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
 const Main = () => {
+    const { login, user } = useAuth();
+    const currUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+    let navigate = useNavigate();
+
+    useEffect(() => {
+        if (currUser && currUser !== "") {
+            let newUser = {
+                accessToken: token!,
+                user: JSON.parse(currUser)
+            }
+            login(newUser)
+        } else {
+            navigate('/login')
+        }
+    }, [])
+
     return (
         <Page>
-            <Navbar/>
+            <Navbar isAuth={true}/>
             <PageContainer>
                 <div style={{ display: 'flex', boxSizing: 'border-box', width: '100%', padding: '0 20px', alignItems: 'center', justifyContent: "space-between" }}>
                     <span style={{fontSize: '35px'}}><b>Links</b></span>
