@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf ./build && tsc",
-    "start": "node build/index.js",
+    "build": "tsc",
+    "start": "node build/server.js",
     "dev": "nodemon src/server.ts"
   },
   "keywords": [],
