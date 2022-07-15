@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "nodemon nodeBackend/src/server.ts",
-    "build": "tsc -p ."
+    "build": "tsc -p nodeBackend/."
   },
   "keywords": [],
   "author": "",
