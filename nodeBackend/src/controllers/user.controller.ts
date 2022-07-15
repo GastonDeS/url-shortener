@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express';
 import { ERRORS } from '../constants/error.constant';
 import GenericException from '../exceptions/generic.exception';
+import { USER_TYPE } from '../models/user.model';
 import UrlService from '../services/url.service';
 import UserService from '../services/user.service';
 
@@ -34,7 +35,7 @@ export class UserController {
 
         try {
             await this.userService.updatePlan(userId);
-            return res.status(200).send({role: 1});
+            return res.status(200).send({role: USER_TYPE.PREMIUM});
         } catch (error) {
             next(error);
         }

@@ -8,14 +8,14 @@ export interface IUser extends Document {
 }
 
 export enum USER_TYPE {
-    PERSON, PREMIUM
+    BASIC, PREMIUM
 }
 
 const UserSchema: Schema = new mongoose.Schema({
     username: {type: String, maxlength: 30},
     email: {type: String, unique: true, maxLength: 80},
     password: {type: String},
-    type: {type: Number, enum: USER_TYPE, default: USER_TYPE.PERSON},
+    type: {type: Number, enum: USER_TYPE, default: USER_TYPE.BASIC},
 });
 
 export default mongoose.model<IUser>('User', UserSchema);
