@@ -12,8 +12,8 @@ export class AuthController {
     }
 
     public login: RequestHandler = async (req, res, next) => {
-        const email = req.body.email;
-        const password = req.body.password;
+        const email: string = req.userBasic.email;
+        const password: string = req.userBasic.password;
 
         try {
             if (!password || !email ) {
