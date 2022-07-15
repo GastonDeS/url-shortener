@@ -1,44 +1,101 @@
+import '@coreui/coreui/dist/css/coreui.min.css'
 import { PageContainer, Page, Button, Pill } from "../../GlobalStyles"
 import Navbar from "../../components/Navbar"
 import Link from "../../components/Link"
-import { truncate } from "fs/promises"
 import { MainLinksContainer, MainContainer, FilterContainer, DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader } from "./styles"
+import { CCollapse, CCard, CCardBody } from '@coreui/react'
+import { useState } from "react"
+import ReactModal from 'react-modal'
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
 
 const Main = () => {
+
+    const [show, setShow] = useState<boolean>(false);
+    const [showFilters, setShowFilters] = useState<boolean>(false);
+
+
+    ChartJS.register(
+        CategoryScale,
+        LinearScale,
+        BarElement,
+        Title,
+        Tooltip,
+        Legend
+    );
+
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top' as const,
+            },
+            title: {
+                display: true,
+                text: 'Clicks per Date',
+                font: {
+                    size: 30,
+                }
+            },
+        },
+    };
+
+    const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+    const data = {
+        labels,
+        datasets: [
+            {
+                label: 'Clicks',
+                data: labels.map(() => Math.random() * 10),
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            },
+        ],
+    };
+
     return (
         <Page>
             <Navbar isLogged={true} />
             <PageContainer>
                 <div style={{ display: 'flex', boxSizing: 'border-box', width: '100%', padding: '0 20px', alignItems: 'center', justifyContent: "space-between" }}>
-                    <span style={{fontSize: '35px'}}><b>Links</b></span>
+                    <span style={{ fontSize: '35px' }}><b>Links</b></span>
                     <div style={{ display: 'flex', width: 'auto', height: '40px', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Button primary>Upgrade to premium mode</Button>
                     </div>
                 </div>
                 <MainContainer>
                     <FilterContainer>
-                        <Button primary>Filters</Button>
-                        <select style={{ width: '150px' }} title="Tag">
-                            <option>Tag1</option>
-                            <option>Tag3</option>
-                        </select>
+                        <Button primary onClick={() => setShowFilters(!showFilters)}>Filters</Button>
                     </FilterContainer>
+                    {showFilters && <div>AA</div>}
+                    <ReactModal isOpen={showFilters}>
+                        AAAAAAAAAAA
+                    </ReactModal>
+
                     <DataContainer>
                         <MainLinksContainer>
                             <LinkListHeader>
                                 <span>3 results</span>
-                                <span>Clicks qty</span>
+                                <span>Total Clicks</span>
                             </LinkListHeader>
                             <Link isClicked={false}></Link>
                             <Link isClicked={false}></Link>
                             <Link isClicked={true}></Link>
                         </MainLinksContainer>
                         <ExpandedLink>
-                            <div style={{display: 'flex', justifyContent: 'space-between', width: '100%'}}>
-                                <span style={{alignSelf: 'flex-start', margin: '10px', fontSize: '34px', fontWeight: '500'}}>Main Text</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                <span style={{ alignSelf: 'flex-start', margin: '10px', fontSize: '34px', fontWeight: '500' }}>Main Text</span>
                                 <Button>Edit</Button>
                             </div>
-                            <span style={{alignSelf: 'flex-start', margin: '10px'}}>3 ago 01:32 by GastonDeSchant</span>
+                            <span style={{ alignSelf: 'flex-start', margin: '10px' }}>3 ago 01:32 by GastonDeSchant</span>
                             <LinkDiv>
                                 <LinkText>
                                     <img src={require('../../linkLogo.png')} width='25px' style={{ verticalAlign: 'middle', margin: '0 7px 4px 0' }} />
@@ -49,9 +106,22 @@ const Main = () => {
                                     <Button>QR Code</Button>
                                 </LinkButtons>
                             </LinkDiv>
-                            <span style={{alignSelf: 'flex-start', margin: '0 10px',padding: '22px 0', borderBottom: '1px solid pink', width: '95%'}}><b>Destination:</b> https://gedes.com</span>
-                            <span style={{alignSelf: 'flex-start', margin: '0 10px',padding: '22px 0', borderBottom: '1px solid pink', width: '95%'}}>Tags: <Pill>Tag 1</Pill> </span>
-                            <span style={{margin: '6px 10px'}}><b>v Show Stats v</b></span>
+                            <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}><b>Destination:</b> https://gedes.com</span>
+                            <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
+                                Tags: <Pill>Tag 1</Pill> <Pill>Tag 2</Pill> <Button>+</Button> </span>
+                            <div style={{ padding: '30px 0 10px 0' }}>
+                                <Button onClick={async () => {
+                                    setShow(!show);
+                                    await new Promise(r => setTimeout(r, 400));; window.scrollTo(0, document.body.scrollHeight);
+                                }}>
+                                    {show ? '^' : 'v'} {show ? 'Hide' : 'Show'} Stats {show ? '^' : 'v'}
+                                </Button>
+                            </div>
+                            <CCollapse style={{ width: '55rem' }} visible={show} >
+                                <CCard style={{ background: 'transparent', margin: '10px' }}>
+                                    <CCardBody><Bar options={options} data={data} /></CCardBody>
+                                </CCard>
+                            </CCollapse>
                         </ExpandedLink>
                     </DataContainer>
                 </MainContainer>

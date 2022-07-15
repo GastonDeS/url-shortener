@@ -27,8 +27,8 @@ export const FilterContainer = styled.div `
     height: auto;
     align-self: flex-start;
     flex-direction: row;
-    justify-content: space-around;
-    padding: 10px 10px;
+    justify-content: flex-start;
+    margin: 20px 0 10px 20px;
     box-sizing:border-box;
 `
 export const DataContainer = styled.div `
@@ -57,7 +57,7 @@ export const ExpandedLink = styled.div `
 export const LinkDiv = styled.div `
     border: solid 3px pink;
     border-radius: 5px;
-    height: 50px;
+    height: 65px;
     width: 80%;
     display: flex;
     align-items: center;

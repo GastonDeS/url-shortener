@@ -55,7 +55,7 @@ export const Button = styled.button <{primary?: boolean}> `
   border: 1px solid #D67097;
   font-weight: 600;
   font-size: 18px;
-  padding: 7px 15px;
+  padding: 5px 15px;
   height: fit-content;
   align-self: center;
 
