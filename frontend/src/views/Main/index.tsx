@@ -29,6 +29,9 @@ import { useEffect, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { axiosService } from '../../services'
+import { methods } from '../../assets/constants'
+import { string } from 'prop-types'
 
 
 const Main = () => {
@@ -55,6 +58,24 @@ const Main = () => {
         }
     }, [])
 
+    const createLink = () => {
+        const user = JSON.parse(currUser? currUser: "");
+        const data = {
+            url: 'https://facebook.com.ar',
+            shortUrl: 'abcdef',
+            labels: []
+        }
+        axiosService.authAxiosWrapper(methods.POST, `/v1/urls`, {}, data );
+    }
+
+    useEffect(() => {
+        const user = JSON.parse(currUser? currUser: "");
+        const links :any = 3;
+        axiosService.authAxiosWrapper(methods.GET, `/${user._id}/links`,{},{})
+        .then( (res) => {
+            console.log(res.data);
+        });
+    },[]);
 
     ChartJS.register(
         CategoryScale,
@@ -118,6 +139,7 @@ const Main = () => {
                 <MainContainer>
                     <FilterContainer>
                         <Button primary onClick={() => setShowFilters(!showFilters)}>Filters</Button>
+                        <Button onClick={() => createLink()}>new link</Button>
                     </FilterContainer>
                     <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle}>
                         <ModalTitleContainer>
