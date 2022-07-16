@@ -25,9 +25,9 @@ class UserAuthService {
 
     login = async (email: string, password: string) => {
         const user = await this.userService.getUserByEmail(email);
-        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER_NOT_FOUND);
+        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
 
-        if (!this.validatePassword(password, user.password!)) throw new GenericException(ERRORS.NOT_FOUND.USER_NOT_FOUND);
+        if (!this.validatePassword(password, user.password!)) throw new GenericException(ERRORS.NOT_FOUND.USER);
 
         const accessToken = this.signAccessToken(user._id.toString(), user.email);
         const prettyUser = this.userService.prettyUser(user);

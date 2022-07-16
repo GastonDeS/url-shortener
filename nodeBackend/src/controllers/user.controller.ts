@@ -23,10 +23,23 @@ export class UserController {
         try {
             if (!username || !email || !password) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
 
-            const user = await this.userService.createUser(req.body.username, req.body.email, req.body.password);
+            const user = await this.userService.createUser(username, email, password);
             return res.status(201).send({user});
         } catch (error) {
             next(error);
+        }
+    }
+
+    getUserById: RequestHandler = async (req, res, next) => {
+        const userId: string = req.params.userId;
+
+        try {
+            if (!userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
+
+            const user = await this.userService.getPrettyUser(userId);
+            return res.status(200).send({user});
+        } catch (err) {
+            next(err);
         }
     }
 

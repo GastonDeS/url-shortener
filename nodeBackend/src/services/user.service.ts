@@ -1,3 +1,5 @@
+import { ERRORS } from "../constants/error.constant";
+import GenericException from "../exceptions/generic.exception";
 import { IPrettyUser } from "../interfaces/pretty.interface";
 import userModel, { IUser, USER_TYPE } from "../models/user.model";
 
@@ -37,6 +39,12 @@ class UserService {
 
     getUserByEmail = async (email: string) => {
         return await userModel.findOne({email: email});
+    }
+
+    getPrettyUser = async (userId: string) => {
+        const user: IUser | null = await this.getUserById(userId);
+        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
+        return this.prettyUser(user);
     }
 
     getUserById = async (userId: string) => {

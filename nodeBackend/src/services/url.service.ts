@@ -33,7 +33,7 @@ class UrlService {
             shortUrl = this.genShortUrl(url, userId);
         }
         const user = await this.userService.getUserById(userId);
-        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER_NOT_FOUND);
+        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
 
         const link = await urlModel.create({userId, shortUrl, url, labels});
         if (user.type === USER_TYPE.PREMIUM) {
