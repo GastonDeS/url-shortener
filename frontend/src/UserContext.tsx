@@ -3,7 +3,7 @@ import UserModel from "./models/UserModel";
 
 export type User = {
   accessToken: string;
-  user: UserModel;
+  prettyUser: UserModel;
 }
 
 export type UserContext = {
@@ -20,9 +20,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = React.useState<UserModel | null>(null);
 
   const login = (newUser: User) => {
-    setUser(newUser.user);
+    setUser(newUser.prettyUser);
     localStorage.setItem('token', newUser.accessToken);
-    localStorage.setItem('user', JSON.stringify(newUser.user));
+    localStorage.setItem('user', JSON.stringify(newUser.prettyUser));
   };
 
   const logout = () => {
