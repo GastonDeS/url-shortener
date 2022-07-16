@@ -13,3 +13,8 @@ export const methods = {
   PUT: 2,
   DELETE: 3
 }
+
+export const plan = {
+  BASIC: 0,
+  PREMIUM: 1
+}

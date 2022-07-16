@@ -41,7 +41,7 @@ const Main = () => {
     const [showFilters, setShowFilters] = useState<boolean>(false);
     const [showQR, setShowQR] = useState<boolean>(false);
     const [showEditLink, setShowEditLink] = useState<boolean>(false);
-
+    const [upgradePremium, setUpgradePremium] = useState<boolean>(false);
 
     useEffect(() => {
         if (currUser && currUser !== "") {
@@ -111,9 +111,9 @@ const Main = () => {
             <PageContainer>
                 <div style={{ display: 'flex', boxSizing: 'border-box', width: '100%', padding: '0 20px', alignItems: 'center', justifyContent: "space-between" }}>
                     <span style={{ fontSize: '35px' }}><b>Links</b></span>
-                    <div style={{ display: 'flex', width: 'auto', height: '40px', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Button primary>Upgrade to premium</Button>
-                    </div>
+                    {user?.type === 0 && <div style={{ display: 'flex', width: 'auto', height: '40px', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Button primary onClick={() => setUpgradePremium(true)}>Upgrade to premium</Button>
+                    </div>}
                 </div>
                 <MainContainer>
                     <FilterContainer>
@@ -185,6 +185,27 @@ const Main = () => {
                             </EditLinkContainer>
                             <hr style={{ margin: '3px 0 20px 0' }} />
                             <Button style={{ width: '100%', margin: '0' }} onClick={() => setShowEditLink(false)}> Save </Button>
+                        </div>
+                    </ReactModal>
+                    <ReactModal isOpen={upgradePremium} style={modalStyle}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
+                                <Button onClick={() => setUpgradePremium(false)}>&#10005;</Button>
+                            </div>
+                            <ModalTitleContainer>
+                                <ModalTitle>Premium plan</ModalTitle>
+                            </ModalTitleContainer>
+                            <div style={{ alignItems: 'center', flexDirection: 'column', justifyContent: 'center', display: 'flex', height: 'fit-content', width: '80%', marginBottom: '20px' }}>
+                                <h1>$24,99</h1>
+                                <p>/month</p>
+                                <div style={{ display: 'flex', justifyContent: 'center', border: '2px solid #D67097', borderRadius: '0.625em', width: '90%', marginBottom: '0.5em'}}>
+                                    Illimited URLs
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'center', border: '2px solid #D67097', borderRadius: '0.625em', width: '90%'}}>
+                                    No expiration time
+                                </div>
+                            </div>
+                            <Button primary onClick={() => setUpgradePremium(false)} style={{ alignSelf: "center" }}>Upgrade now</Button>
                         </div>
                     </ReactModal>
 
