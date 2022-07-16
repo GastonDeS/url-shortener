@@ -18,7 +18,7 @@ function Login() {
   const [error, setError] = useState(false);
   let navigate = useNavigate();
   let auth = useAuth();
-  const { register, formState: {errors}, handleSubmit, reset} = useForm<FormData>();
+  const { register, formState: {errors}, handleSubmit} = useForm<FormData>();
 
   const onSubmit = handleSubmit(({email, password}: FormData) => {
     setError(false);

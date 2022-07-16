@@ -20,7 +20,7 @@ function Register() {
   let navigate = useNavigate();
   const [error, setError] = useState(false);
   let auth = useAuth();
-  const { register, formState: {errors}, handleSubmit, reset, getValues} = useForm<FormData>();
+  const { register, formState: {errors}, handleSubmit, getValues} = useForm<FormData>();
 
   const onSubmit = handleSubmit(({username, email, password}: FormData) => {
     setError(false);
@@ -41,7 +41,7 @@ function Register() {
                 navigate('/')
               } else {
                 auth.login(result.getData())
-                navigate('/main')
+                navigate('/')
               }
             })
         }

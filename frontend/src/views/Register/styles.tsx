@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const Wrapper = styled.form`
   background: ${(props) => props.theme.colors.first};
-  width: 25vw;
+  width: 30vw;
   padding: 20px 40px;
   border-radius: 12px;
   margin-bottom: 100px;

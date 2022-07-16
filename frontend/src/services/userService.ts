@@ -1,6 +1,7 @@
 import axios from "axios";
+import { axiosService } from ".";
+import { methods } from "../assets/constants";
 import Result from "../models/Result";
-import UserModel from "../models/UserModel";
 
 type FormData = {
   username: string;
@@ -17,7 +18,7 @@ export class UserService {
       let config = {
         headers:  {'Content-Type' : 'application/json'}
       }
-      const response = await axios.post<any>(USER_BASE_URL, formData, config);
+      const response = await axiosService.axiosWrapper(methods.POST, USER_BASE_URL, config, formData);
       return Result.handleResult(response);
     } catch (error: any) {
       return Result.failure(error.response.status);
