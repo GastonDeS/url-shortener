@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import { ThemeProvider } from 'styled-components';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Login from "./views/Login/index";
 import Main from "./views/Main/index"
 import Register from './views/Register/index';

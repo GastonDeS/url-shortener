@@ -1,6 +1,5 @@
-import axios, { AxiosRequestHeaders, AxiosResponse } from 'axios';
+import axios from 'axios';
 import { methods } from '../assets/constants';
-import Result from '../models/Result';
 
 export class AxiosService {
 
@@ -17,7 +16,9 @@ export class AxiosService {
       case methods.GET:
         return axios.get<T>(path, config);
       case methods.POST:
-        config.headers['Content-Type'] = 'application/json'
+        let newConfig = { ...config };
+        newConfig.headers = { ...config.headers };
+        newConfig.headers['Content-Type'] = 'application/json'
         return axios.post<T>(path, data, config);
       case methods.PUT:
         return axios.put<T>(path, data, config);

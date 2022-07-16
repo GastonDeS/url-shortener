@@ -1,5 +1,4 @@
 import Result from "../models/Result";
-import axios from "axios";
 import { User } from "../UserContext";
 import { axiosService } from ".";
 import { methods } from "../assets/constants";

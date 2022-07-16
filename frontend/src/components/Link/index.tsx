@@ -1,6 +1,4 @@
-import { Tracing } from "trace_events"
 import { LinkContainer, LinkDataContainer } from "./styles";
-import click from "../../click.png"
 import { useState } from "react";
 
 interface LinkProps {
