@@ -29,11 +29,9 @@ class UserAuthService {
 
         if (!this.validatePassword(password, user.password!)) throw new GenericException(ERRORS.NOT_FOUND.USER_NOT_FOUND);
 
-        delete user.password;
-        delete user.__v;
-
         const accessToken = this.signAccessToken(user._id.toString(), user.email);
-        return {user, accessToken};
+        const prettyUser = this.userService.prettyUser(user);
+        return {prettyUser, accessToken};
     }
 
     verifyToken = (token: string) : string | jwt.JwtPayload=> {
