@@ -25,15 +25,13 @@ class UserAuthService {
 
     login = async (email: string, password: string) => {
         const user = await this.userService.getUserByEmail(email);
-        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER_NOT_FOUND);
+        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
 
-        if (!this.validatePassword(password, user.password!)) throw new GenericException(ERRORS.NOT_FOUND.USER_NOT_FOUND);
-
-        delete user.password;
-        delete user.__v;
+        if (!this.validatePassword(password, user.password!)) throw new GenericException(ERRORS.NOT_FOUND.USER);
 
         const accessToken = this.signAccessToken(user._id.toString(), user.email);
-        return {user, accessToken};
+        const prettyUser = this.userService.prettyUser(user);
+        return {prettyUser, accessToken};
     }
 
     verifyToken = (token: string) : string | jwt.JwtPayload=> {
