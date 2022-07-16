@@ -108,7 +108,7 @@ export const EditLinkContainer = styled.div`
     display: flex;
     flex-direction: column;
     height: fit-content;
-    margin: 15px 5px;
+    margin: 15px 5px 0;
 `
 
 export const ModalTitle = styled.span`
@@ -124,14 +124,29 @@ export const ModalTitleContainer = styled.div`
     justify-content: space-between;
 `
 
-export const TagInput = styled.input`
+export const CustomInput = styled.input`
     outline:none;
     height:34px;
     bottom:14px;
     right:9px;
-    border-radius:22px;
-    width: 70%;
+    border-radius: 5px;
     box-sizing:border-box;
-    padding:0 18px;
+    padding:0 12px;
     margin: 5px 0;
+    height: 5.5vh;
+    border: 2px solid #D67097;
+    :focus {
+        box-shadow: 0 0 0 1px #D67097;
+    }
+`
+export const TagsContainer = styled.div `
+    display: grid;
+    grid-template-columns: auto auto auto;
+    padding: 10px;
+    width: 80%;
+`
+
+export const InputTitle = styled.span `
+    font-size: 18px;
+    font-weight: 500;
 `

@@ -1,11 +1,11 @@
 import '@coreui/coreui/dist/css/coreui.min.css'
-import { PageContainer, Page, Button, Pill } from "../../GlobalStyles"
+import { PageContainer, Page, Button, Pill, PillButton } from "../../GlobalStyles"
 import Navbar from "../../components/Navbar"
 import Link from "../../components/Link"
 import {
     MainLinksContainer, MainContainer, FilterContainer,
     DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader, SelectsContainer, CustomSelectContainer, EditLinkContainer,
-    ModalTitle, ModalTitleContainer, TagInput
+    ModalTitle, ModalTitleContainer, CustomInput, TagsContainer, InputTitle
 } from "./styles"
 import { CCollapse, CCard, CCardBody } from '@coreui/react'
 import ReactModal from 'react-modal'
@@ -27,6 +27,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../UserContext'
 import { useEffect, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const Main = () => {
@@ -91,6 +93,17 @@ const Main = () => {
         ],
     };
 
+    const emitToast = () => {
+        toast('\u2705 Copied to clipboard!', {
+            autoClose: 1000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
+    }
+
 
     return (
         <Page>
@@ -135,30 +148,42 @@ const Main = () => {
                                 <ModalTitle>QR Code</ModalTitle>
                                 <Button onClick={() => setShowQR(false)}>&#10005;</Button>
                             </ModalTitleContainer>
-                            <div style={{ alignSelf: 'center', justifyContent: 'center', display: 'flex', height: 'fit-content', width: 'fit-content', margin: '15px 0' }}>
+                            <div style={{ alignSelf: 'center', justifyContent: 'center', display: 'flex', height: 'fit-content', width: 'fit-content', margin: '15px 0 30px 0' }}>
                                 <QRCodeCanvas size={324} value="https://app.bitly.com/" fgColor='#D67097' />
                             </div>
                             <Button primary onClick={() => setShowQR(false)} style={{ alignSelf: "center" }}>Save</Button>
                         </div>
                     </ReactModal>
-                    <ReactModal isOpen={showEditLink} style={rightModalStyle}>
+                    <ReactModal id={"right-modal"} isOpen={showEditLink} style={rightModalStyle} closeTimeoutMS={500}>
                         <ModalTitleContainer style={{ backgroundColor: "#D67097", margin: '0', padding: '7px 4px', height: '70px' }}>
                             <ModalTitle>Edit Link</ModalTitle>
                             <Button primary onClick={() => setShowEditLink(false)}>&#10005;</Button>
                         </ModalTitleContainer>
-                        <div style={{display: 'flex', flexDirection: 'column', margin: '15px'}}>
+                        <div style={{ display: 'flex', flexDirection: 'column', margin: '15px' }}>
                             <EditLinkContainer>
-                                <span>Edit Link Title</span>
-                                <input type={"text"}></input>
+                                <InputTitle>Edit Link Title</InputTitle>
+                                <CustomInput type={"text"}></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
-                                <span>Edit Link</span>
-                                <input type={"text"}></input>
+                                <InputTitle>Edit Link</InputTitle>
+                                <CustomInput type={"text"}></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
-                                <span>Tags</span>
-                                <TagInput type={"text"}></TagInput>
+                                <InputTitle>Tags</InputTitle>
+                                <div style={{ display: 'flex', width: '100%' }}>
+                                    <CustomInput style={{ borderRadius: '22px', marginRight: '10px', width: '75%' }} type={"text"} />
+                                    <Button>&#43;</Button>
+                                </div>
+                                <TagsContainer>
+                                    <Pill>Tag 1<PillButton>&#10005;</PillButton></Pill>
+                                    <Pill>Tag 2<PillButton>&#10005;</PillButton></Pill>
+                                    <Pill>Tag 3<PillButton>&#10005;</PillButton></Pill>
+                                    <Pill>Tag 1<PillButton>&#10005;</PillButton></Pill>
+                                    <Pill>Tag 2<PillButton>&#10005;</PillButton></Pill>
+                                    <Pill>Tag 3<PillButton>&#10005;</PillButton></Pill>
+                                </TagsContainer>
                             </EditLinkContainer>
+                            <hr style={{ margin: '3px 0 20px 0' }} />
                             <Button style={{ width: '100%', margin: '0' }} onClick={() => setShowEditLink(false)}> Save </Button>
                         </div>
                     </ReactModal>
@@ -185,7 +210,7 @@ const Main = () => {
                                     byPs/shortenedUrl
                                 </LinkText>
                                 <LinkButtons>
-                                    <Button primary>Copy</Button>
+                                    <Button primary onClick={() => emitToast()}>Copy</Button>
                                     <Button onClick={() => setShowQR(true)}>QR Code</Button>
                                 </LinkButtons>
                             </LinkDiv>
@@ -208,6 +233,17 @@ const Main = () => {
                             </CCollapse>
                         </ExpandedLink>
                     </DataContainer>
+                    <ToastContainer
+                        position="bottom-center"
+                        autoClose={1000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                    />
                 </MainContainer>
             </PageContainer>
         </Page >

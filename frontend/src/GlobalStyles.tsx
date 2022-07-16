@@ -80,4 +80,23 @@ export const Pill = styled.span `
   line-height: 22px;
   cursor: pointer;
   border-radius: 16px;
+  width: fit-content;
+  margin: 1vh 0;
 `;
+
+export const PillButton = styled.button `
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  height: fit-content;
+  width: fit-content;
+  text-align: center;
+  margin: 0 2px;
+  :hover {
+    background: rgba(255,255,255,0.3);
+  }
+  :active {
+    background: rgba(255,255,255,0.5);
+  }
+`

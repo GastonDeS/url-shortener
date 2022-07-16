@@ -24,8 +24,8 @@ const Link = ({isClicked, ...rest}:LinkProps) => {
                 <span><b>Main Text</b></span>
                 <span>byPs/shortenedUrl</span>
             </LinkDataContainer>
-            <div style={{display: 'flex', alignItems: 'center'}} onClick = {() => setClicks(clicks+1)}>
-                <img width={'22px'} src={require("../../click.png")}></img>
+            <div style={{display: 'flex', alignItems: 'center', fontSize: '20px'}} onClick = {() => setClicks(clicks+1)}>
+               🖱️
             {clicks}</div>
         </LinkContainer>
     )

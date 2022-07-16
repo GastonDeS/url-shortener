@@ -36,3 +36,19 @@
     transform: rotate(360deg);
   }
 }
+
+.ReactModal__Overlay #right-modal {
+  opacity: 1;
+  transition: all 500ms ease-in-out;
+  transform: translateX(400px);
+}
+
+.ReactModal__Overlay--after-open #right-modal {
+  opacity: 1;
+  transform: translateX(0px);
+}
+
+.ReactModal__Overlay--before-close #right-modal{
+  opacity: 0;
+  transform: translateX(400px);
+}

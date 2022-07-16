@@ -56,7 +56,7 @@ export const rightModalStyle: ReactModal.Styles = {
         outline: 'none',
         padding: '0 0 20px 0',
         height: '100vh',
-        width: '30em',
+        width: '25vw',
         alignSelf: 'center'
 
     }
