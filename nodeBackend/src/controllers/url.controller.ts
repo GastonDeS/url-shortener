@@ -14,11 +14,12 @@ export class UrlController {
     createurl : RequestHandler = async (req, res, next) => {
         const userId = req.user.id;
         const url = req.body.url;
+        const name = req.body.name;
         const shortUrl = req.body.shortUrl;
         const labels = req.body.labels;
 
         try {
-            const link = await this.urlService.addUrl(userId, shortUrl,url, labels);
+            const link = await this.urlService.addUrl(userId, name, shortUrl, url, labels);
             return res.status(201).send({link});
         } catch (error) {
             next(error);

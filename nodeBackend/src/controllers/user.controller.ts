@@ -1,6 +1,7 @@
 import { RequestHandler } from 'express';
 import { ERRORS } from '../constants/error.constant';
 import GenericException from '../exceptions/generic.exception';
+import { getStartOfDate } from '../helpers/date.helper';
 import { USER_TYPE } from '../models/user.model';
 import UrlService from '../services/url.service';
 import UserService from '../services/user.service';
@@ -56,9 +57,13 @@ export class UserController {
 
     getUrlsFromUser: RequestHandler = async (req, res, next) => {
         const userId = req.user.id;
+        const after: Date = new Date(req.query.after as string);
 
+        const startDate = getStartOfDate(after).toDate();
         try {
-            const urls = await this.urlService.getUrlsFromUserId(userId);
+            if (!userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
+
+            const urls = await this.urlService.getUrlsFromUserId(userId, startDate);
             return res.send(urls);
         } catch (error) {
             next(error);

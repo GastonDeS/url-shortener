@@ -1,7 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 
 export interface IUrl extends Document {
-    userId: string
+    userId: string,
+    name: string,
     shortUrl: string,
     url: string,
     labels: string[],
@@ -9,10 +10,11 @@ export interface IUrl extends Document {
 
 const UrlSchema: Schema = new mongoose.Schema({
     userId: {type: Schema.Types.ObjectId, ref: 'User'},
-    url: {type: String },
-    shortUrl: {type: String, unique: true, index: true},
+    name: {type: String, required: true},
+    url: {type: String, required: true },
+    shortUrl: {type: String, unique: true, index: true, required: true},
     labels: {type: [String] },
-});
+},{ timestamps: { createdAt: 'creationTime' } });
 
 export default mongoose.model<IUrl>('Url', UrlSchema);
 

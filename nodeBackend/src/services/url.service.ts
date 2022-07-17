@@ -1,4 +1,4 @@
-import { FIFTEEN_DAYS } from "../constants/general.constant";
+import { BASIC_PLAN_URL_TIME } from "../constants/general.constant";
 import urlModel, { IUrl } from "../models/url.model";
 import RedisService from "./redis.service";
 import {Md5} from "md5-typescript";
@@ -28,18 +28,18 @@ class UrlService {
         return UrlService.instance;
     };
 
-    addUrl = async (userId: string, shortUrl: string | undefined, url: string, labels: string[]) => {
+    addUrl = async (userId: string, name: string, shortUrl: string | undefined, url: string, labels: string[]) => {
         if (!shortUrl) {
             shortUrl = this.genShortUrl(url, userId);
         }
         const user = await this.userService.getUserById(userId);
         if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
 
-        const link = await urlModel.create({userId, shortUrl, url, labels});
+        const link = await urlModel.create({userId, name,shortUrl, url, labels});
         if (user.type === USER_TYPE.PREMIUM) {
             await this.redisService.setToRedis(shortUrl, url);
         } else {
-            await this.redisService.setExpireKeyToRedis(shortUrl, url, FIFTEEN_DAYS);
+            await this.redisService.setExpireKeyToRedis(shortUrl, url, BASIC_PLAN_URL_TIME);
         }
         return link;
     }
@@ -48,7 +48,9 @@ class UrlService {
         return await this.clickService.getHistogram(shortUrl);
     }
 
-    getUrlsFromUserId = async (userId: string) => {
+    getUrlsFromUserId = async (userId: string, after?: Date) => {
+        if (after)
+            return await urlModel.find({userId: userId, creationTime: {$gt: after}}, '_id userId name url shortUrl labels creationTime');
         return await urlModel.find({userId: userId});
     }
 
@@ -69,7 +71,7 @@ class UrlService {
     renewUrl = async (shortUrl: string) => {
         const link = await urlModel.findOne({shortUrl});
         if (!link) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
-        await this.redisService.setExpireKeyToRedis(shortUrl, link.url, FIFTEEN_DAYS);
+        await this.redisService.setExpireKeyToRedis(shortUrl, link.url, BASIC_PLAN_URL_TIME);
         return link;
     }
 
