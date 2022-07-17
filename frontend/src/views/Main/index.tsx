@@ -5,7 +5,7 @@ import Link from "../../components/Link"
 import {
     MainLinksContainer, MainContainer, FilterContainer,
     DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader, SelectsContainer, CustomSelectContainer, EditLinkContainer,
-    ModalTitle, ModalTitleContainer, CustomInput, TagsContainer, InputTitle
+    ModalTitle, ModalTitleContainer, CustomInput, TagsContainer, InputTitle, CustomA
 } from "./styles"
 import { CCollapse, CCard, CCardBody } from '@coreui/react'
 import ReactModal from 'react-modal'
@@ -25,25 +25,44 @@ import { colourOptions } from './SelectData/data'
 import { modalStyle, rightModalStyle } from './ModalData/ModalStyle'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../UserContext'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { axiosService } from '../../services'
 import { methods } from '../../assets/constants'
 import { string } from 'prop-types'
+import { AxiosResponse } from 'axios'
 
+
+export interface LinkData {
+    id: string,
+    userId: string,
+    url: string,
+    shortUrl: string,
+    v: number,
+    labels: string[]
+}
 
 const Main = () => {
+
+
 
     const { login, user } = useAuth();
     const currUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
     let navigate = useNavigate();
     const [show, setShow] = useState<boolean>(false);
+    const [logged, setLogged] = useState<boolean>(false);
     const [showFilters, setShowFilters] = useState<boolean>(false);
     const [showQR, setShowQR] = useState<boolean>(false);
     const [showEditLink, setShowEditLink] = useState<boolean>(false);
+    const [showNewLink, setShowNewLink] = useState<boolean>(false);
+    const [tags, setTags] = useState<string[]>([]);
+    const [links, setLinks] = useState<LinkData[]>([]);
+    const [clickedLink, setClickedLink] = useState<LinkData>();
+    const tagInputRef = useRef<HTMLInputElement>(null);
+    const chartDivRef = useRef<HTMLDivElement>(null)
 
 
     useEffect(() => {
@@ -53,29 +72,54 @@ const Main = () => {
                 prettyUser: JSON.parse(currUser)
             }
             login(newUser)
+            setLogged(true);
         } else {
             navigate('/login')
         }
     }, [])
 
+    const addTag = () => {
+        setTags(tags => [...tags, 'pepe'])
+    }
+
+    const expandLink = (link: LinkData) => {
+        setClickedLink(link);
+        if (link.labels)
+            setTags(link.labels);
+    }
+
+    const addNewTag = (value: string) => {
+        if (!tags.includes(value))
+            setTags(tags => [...tags, value]);
+        if (tagInputRef.current?.value)
+            tagInputRef.current.value = "";
+    }
+
+    const removeTag = (value: string) => {
+        setTags(tags.filter(t => t !== value));
+    }
+
+
     const createLink = () => {
-        const user = JSON.parse(currUser? currUser: "");
+        const user = JSON.parse(currUser ? currUser : "");
         const data = {
-            url: 'https://facebook.com.ar',
-            shortUrl: 'abcdef',
-            labels: []
+            url: 'https://instagram.com.ar',
+            shortUrl: 'ig_god',
+            labels: ['important']
         }
-        axiosService.authAxiosWrapper(methods.POST, `/v1/urls`, {}, data );
+        axiosService.authAxiosWrapper(methods.POST, `/v1/urls`, {}, data);
     }
 
     useEffect(() => {
-        const user = JSON.parse(currUser? currUser: "");
-        const links :any = 3;
-        axiosService.authAxiosWrapper(methods.GET, `/${user._id}/links`,{},{})
-        .then( (res) => {
-            console.log(res.data);
-        });
-    },[]);
+        if (logged) {
+            const user = JSON.parse(currUser ? currUser : "");
+            axiosService.authAxiosWrapper<LinkData[]>(methods.GET, `/v1/users/${user._id}/links`, {}, {})
+                .then((ans: AxiosResponse<any, LinkData[]>) => {
+                    setLinks(ans.data)
+                    setClickedLink(ans.data[0]);
+                });
+        }
+    }, [logged]);
 
     ChartJS.register(
         CategoryScale,
@@ -139,8 +183,42 @@ const Main = () => {
                 <MainContainer>
                     <FilterContainer>
                         <Button primary onClick={() => setShowFilters(!showFilters)}>Filters</Button>
-                        <Button onClick={() => createLink()}>new link</Button>
+                        <Button onClick={() => setShowNewLink(true)}>new link</Button>
                     </FilterContainer>
+                    <ReactModal isOpen={showNewLink} style={rightModalStyle}>
+                        <ModalTitleContainer style={{ backgroundColor: "#D67097", margin: '0', padding: '7px 4px', height: '70px' }}>
+                            <ModalTitle>New Link</ModalTitle>
+                            <Button primary onClick={() => setShowNewLink(false)}>&#10005;</Button>
+                        </ModalTitleContainer>
+                        <div style={{ display: 'flex', flexDirection: 'column', margin: '15px' }}>
+                            <EditLinkContainer>
+                                <InputTitle>Link Title</InputTitle>
+                                <CustomInput type={"text"}></CustomInput>
+                            </EditLinkContainer>
+                            <EditLinkContainer>
+                                <InputTitle>Long Link</InputTitle>
+                                <CustomInput type={"text"} ></CustomInput>
+                            </EditLinkContainer>
+                            <EditLinkContainer>
+                                <InputTitle>Short Link</InputTitle>
+                                <CustomInput type={"text"}></CustomInput>
+                            </EditLinkContainer>
+                            <EditLinkContainer>
+                                <InputTitle>Tags</InputTitle>
+                                <div style={{ display: 'flex', width: '100%' }}>
+                                    <CustomInput ref={tagInputRef} style={{ borderRadius: '22px', marginRight: '10px', width: '75%' }} placeholder="Create new tags" type={"text"} />
+                                    <Button onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value)}>&#43;</Button>
+                                </div>
+                                <TagsContainer>
+                                    {tags.map((tag, idx) => {
+                                        return (<Pill key={idx}>{tag}<PillButton onClick={() => removeTag(tag)}>&#10005;</PillButton></Pill>);
+                                    })}
+                                </TagsContainer>
+                            </EditLinkContainer>
+                            <hr style={{ margin: '3px 0 20px 0' }} />
+                            <Button style={{ width: '100%', margin: '0' }} onClick={() => setShowEditLink(false)}> Save </Button>
+                        </div>
+                    </ReactModal>
                     <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle}>
                         <ModalTitleContainer>
                             <ModalTitle>Filters</ModalTitle>
@@ -171,7 +249,7 @@ const Main = () => {
                                 <Button onClick={() => setShowQR(false)}>&#10005;</Button>
                             </ModalTitleContainer>
                             <div style={{ alignSelf: 'center', justifyContent: 'center', display: 'flex', height: 'fit-content', width: 'fit-content', margin: '15px 0 30px 0' }}>
-                                <QRCodeCanvas size={324} value="https://app.bitly.com/" fgColor='#D67097' />
+                                <QRCodeCanvas size={324} value={clickedLink?.url ? clickedLink.url : ""} fgColor='#D67097' />
                             </div>
                             <Button primary onClick={() => setShowQR(false)} style={{ alignSelf: "center" }}>Save</Button>
                         </div>
@@ -184,25 +262,22 @@ const Main = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', margin: '15px' }}>
                             <EditLinkContainer>
                                 <InputTitle>Edit Link Title</InputTitle>
-                                <CustomInput type={"text"}></CustomInput>
+                                <CustomInput type={"text"} defaultValue={clickedLink?.shortUrl}></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Edit Link</InputTitle>
-                                <CustomInput type={"text"}></CustomInput>
+                                <CustomInput type={"text"} defaultValue={clickedLink?.shortUrl}></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Tags</InputTitle>
                                 <div style={{ display: 'flex', width: '100%' }}>
-                                    <CustomInput style={{ borderRadius: '22px', marginRight: '10px', width: '75%' }} type={"text"} />
-                                    <Button>&#43;</Button>
+                                    <CustomInput ref={tagInputRef} style={{ borderRadius: '22px', marginRight: '10px', width: '75%' }} placeholder="Create new tags" type={"text"} />
+                                    <Button onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value)}>&#43;</Button>
                                 </div>
                                 <TagsContainer>
-                                    <Pill>Tag 1<PillButton>&#10005;</PillButton></Pill>
-                                    <Pill>Tag 2<PillButton>&#10005;</PillButton></Pill>
-                                    <Pill>Tag 3<PillButton>&#10005;</PillButton></Pill>
-                                    <Pill>Tag 1<PillButton>&#10005;</PillButton></Pill>
-                                    <Pill>Tag 2<PillButton>&#10005;</PillButton></Pill>
-                                    <Pill>Tag 3<PillButton>&#10005;</PillButton></Pill>
+                                    {tags.map((tag, idx) => {
+                                        return (<Pill key={idx}>{tag}<PillButton onClick={() => removeTag(tag)}>&#10005;</PillButton></Pill>);
+                                    })}
                                 </TagsContainer>
                             </EditLinkContainer>
                             <hr style={{ margin: '3px 0 20px 0' }} />
@@ -213,14 +288,14 @@ const Main = () => {
                     <DataContainer>
                         <MainLinksContainer>
                             <LinkListHeader>
-                                <span>3 results</span>
-                                <span>Total Clicks</span>
+                                <span>{links.length} results</span>
+                                <span>Clicks</span>
                             </LinkListHeader>
-                            <Link isClicked={false}></Link>
-                            <Link isClicked={false}></Link>
-                            <Link isClicked={true}></Link>
+                            {links.length !== 0 && links.map((item, index) => {
+                                return (<Link key={index} onClick={expandLink} linkData={item} clicked={item.shortUrl === clickedLink?.shortUrl} />);
+                            })}
                         </MainLinksContainer>
-                        <ExpandedLink>
+                        <ExpandedLink ref={chartDivRef}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                                 <span style={{ alignSelf: 'flex-start', margin: '10px', fontSize: '34px', fontWeight: '500' }}>Main Text</span>
                                 <Button onClick={() => setShowEditLink(true)}>Edit</Button>
@@ -229,21 +304,27 @@ const Main = () => {
                             <LinkDiv>
                                 <LinkText>
                                     <img src={require('../../linkLogo.png')} width='25px' style={{ verticalAlign: 'middle', margin: '0 7px 4px 0' }} />
-                                    byPs/shortenedUrl
+                                    byPs/{clickedLink?.shortUrl}
                                 </LinkText>
                                 <LinkButtons>
-                                    <Button primary onClick={() => emitToast()}>Copy</Button>
+                                    <Button primary onClick={(e) => { navigator.clipboard.writeText(clickedLink?.shortUrl ? clickedLink.shortUrl : ''); emitToast() }}>Copy</Button>
                                     <Button onClick={() => setShowQR(true)}>QR Code</Button>
                                 </LinkButtons>
                             </LinkDiv>
                             <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
-                                <b>Destination: </b><a href="https://www.google.com">https://gedes.com</a></span>
+                                <b>Destination: </b><CustomA href={clickedLink?.url}>{clickedLink?.url}</CustomA></span>
                             <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
-                                Tags: <Pill>Tag 1</Pill> <Pill>Tag 2</Pill> <Button>&#43;</Button> </span>
+                                Tags: {tags.map((elem, index) => {
+                                    return (<Pill style={{ margin: '0 10px' }}>elem</Pill>);
+                                })}
+                                < Button onClick={() => setTags(tags => [...tags, 'pepe'])}>&#43;</Button> </span>
                             <div style={{ padding: '30px 0 10px 0' }}>
                                 <Button onClick={async () => {
                                     setShow(!show);
-                                    await new Promise(r => setTimeout(r, 400));; window.scrollTo(0, document.body.scrollHeight);
+                                    await new Promise(r => setTimeout(r, 400));
+                                    if(chartDivRef.current){
+                                        chartDivRef.current.scroll({top: chartDivRef.current.scrollHeight - 1, behavior: 'smooth'})
+                                    }
                                 }}>
                                     {show ? "\u2191" : "\u2193"} {show ? 'Hide' : 'Show'} Stats {show ? '\u2191' : '\u2193'}
                                 </Button>

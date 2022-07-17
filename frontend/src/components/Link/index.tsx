@@ -1,26 +1,23 @@
 import { LinkContainer, LinkDataContainer } from "./styles";
 import { useState } from "react";
+import { LinkData } from "../../views/Main";
 
 interface LinkProps {
-    name?: string;
-    date?: string;
-    shortenedUrl?: string;
-    clickCount?: number;
-    isClicked: boolean;
+    linkData: LinkData;
+    onClick?: any;
+    clicked: boolean;
 }
 
-const Link = ({isClicked, ...rest}:LinkProps) => {
-    const [clicked, setClicked] = useState(false);
+const Link = ({onClick,linkData, clicked}:LinkProps) => {
     const [clicks, setClicks] = useState(10);
-    
 
     return (
-        <LinkContainer clicked={clicked} onClick = {() => setClicked(!clicked)} >
+        <LinkContainer clicked={clicked} onClick = {() => onClick(linkData)} >
             <input type= "checkbox" ></input>
             <LinkDataContainer>
-                <span><small>3 ago</small></span>
-                <span><b>Main Text</b></span>
-                <span>byPs/shortenedUrl</span>
+                <span><small>{linkData.id}</small></span>
+                <span><b>{linkData.shortUrl}</b></span>
+                <span>byPs/{linkData.shortUrl}</span>
             </LinkDataContainer>
             <div style={{display: 'flex', alignItems: 'center', fontSize: '20px'}} onClick = {() => setClicks(clicks+1)}>
                🖱️

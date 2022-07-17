@@ -47,11 +47,19 @@ export const ExpandedLink = styled.div`
     display:flex;
     background: #ffe;
     width: 100%;
-    height: auto;
+    height: calc(100vh - 222px);
     flex-direction: column;
     align-items: center;
     box-sizing:border-box;
     padding: 0 30px;
+    -ms-overflow-style: none; /* for Internet Explorer, Edge */
+    scrollbar-width: none; /* for Firefox */
+    overflow-y: scroll;
+    
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
 `
 
 export const LinkDiv = styled.div`
@@ -139,14 +147,22 @@ export const CustomInput = styled.input`
         box-shadow: 0 0 0 1px #D67097;
     }
 `
-export const TagsContainer = styled.div `
+export const TagsContainer = styled.div`
     display: grid;
     grid-template-columns: auto auto auto;
     padding: 10px;
     width: 80%;
 `
 
-export const InputTitle = styled.span `
+export const InputTitle = styled.span`
     font-size: 18px;
     font-weight: 500;
+`
+
+export const CustomA = styled.a`
+	text-decoration: none;
+	color: black;
+	padding: 4px;
+    font-size: 16px;
+    font-weight: 400;
 `
