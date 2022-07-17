@@ -38,7 +38,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       ...user!,
       type: plan.PREMIUM
     }
-    console.log(newUser)
     setUser(newUser);
     localStorage.setItem('user', JSON.stringify(newUser));
   }

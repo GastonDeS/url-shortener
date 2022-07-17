@@ -4,8 +4,8 @@ export const handleFailure = (code: number, navigate: Function, defaultValue=und
   if (code === status.NO_CONTENT) {
     return defaultValue;
   } else {
-    if (code === status.UNAUTHORIZED || code === status.FORBIDDEN) {
-      navigate(`/login?code=${code}`);
+    if (code === status.UNAUTHORIZED) {
+      navigate(`/login?code=${status.UNAUTHORIZED}`);
       return;
     } else if (code === status.PAGE_NOT_FOUND) {
       navigate("/404");
