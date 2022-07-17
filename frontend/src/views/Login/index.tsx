@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/index";
 import { Input, Label, Wrapper, Button, Error } from "./styles";
 import { Page, PageContainer, Request, Title } from "../../GlobalStyles";
@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../UserContext";
 import { useForm } from "react-hook-form";
 import { authService } from "../../services";
+import { getQuery, useQuery } from "../../hooks/useQuery";
 
 type FormData = {
   email: string;
@@ -19,6 +20,12 @@ function Login() {
   let navigate = useNavigate();
   let auth = useAuth();
   const { register, formState: {errors}, handleSubmit} = useForm<FormData>();
+  let query = useQuery();
+  let errorStatus = getQuery(query, "code", undefined);
+
+  useEffect(() => {
+    errorStatus && auth.logout();
+  }, []) 
 
   const onSubmit = handleSubmit(({email, password}: FormData) => {
     setError(false);
@@ -41,6 +48,7 @@ function Login() {
         <Wrapper onSubmit={onSubmit}>
           <Title>Login</Title>
           {error && <Error>Please enter valid credentials</Error>}
+          {errorStatus && <Error>Please log in to access</Error>}
           <Label>Email</Label>
           <Input type="text" {...register(
                           "email",

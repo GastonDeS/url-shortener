@@ -3,7 +3,7 @@ import { methods } from '../assets/constants';
 
 export class AxiosService {
 
-  public authAxiosWrapper<T>(action: number, path: string, config: any, data: any) {
+  public authAxiosWrapper<T>(action: number, path: string, config: any, data: any = {}) {
     let newConfig = { ...config };
     newConfig.headers = { ...config.headers };
     const token = localStorage.getItem('token');
@@ -11,7 +11,7 @@ export class AxiosService {
     return this.axiosWrapper(action, path, config, data);
   }
 
-  public axiosWrapper<T>(action: number, path: string, config: any, data: any) {
+  public axiosWrapper<T>(action: number, path: string, config: any, data: any = {}) {
     switch (action) {
       case methods.GET:
         return axios.get<T>(path, config);

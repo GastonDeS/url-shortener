@@ -1,8 +1,23 @@
 import Navbar from "../../components/Navbar";
 import { Button, Page, PageContainer } from "../../GlobalStyles";
-import logo404 from "../../assets/images/404.png"
-import { Image, Text, Title } from "./styles";
+import logo404 from "../../assets/images/404.png";
 import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+
+const Image = styled.img`
+  width: 25%;
+`;
+
+const Title = styled.h1`
+  color: ${(props) => props.theme.colors.first};
+  font-weight: bolder;
+  margin-top: 30px;
+`;
+
+const Text = styled.p`
+  color: ${(props) => props.theme.colors.first};
+  margin: 0;
+`;
 
 function Error404() {
   let navigate = useNavigate();

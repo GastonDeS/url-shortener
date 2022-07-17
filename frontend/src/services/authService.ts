@@ -15,7 +15,7 @@ export class AuthService {
       let config = {
         headers:  {'x-basic-auth' : getBasicToken(email, password)}
       }
-      const response = await axiosService.axiosWrapper<User>(methods.GET, 'http://localhost:8080/v1/auth/login', config, {});
+      const response = await axiosService.axiosWrapper<User>(methods.GET, 'http://localhost:8080/v1/auth/login', config);
       return Result.handleResult(response);
     } catch (error: any) {
       return Result.failure(error.response.status);

@@ -5,7 +5,7 @@ import Link from "../../components/Link"
 import {
     MainLinksContainer, MainContainer, FilterContainer,
     DataContainer, ExpandedLink, LinkDiv, LinkText, LinkButtons, LinkListHeader, SelectsContainer, CustomSelectContainer, EditLinkContainer,
-    ModalTitle, ModalTitleContainer, CustomInput, TagsContainer, InputTitle
+    ModalTitle, ModalTitleContainer, CustomInput, TagsContainer, InputTitle, PremiumOptions, UpdateError
 } from "./styles"
 import { CCollapse, CCard, CCardBody } from '@coreui/react'
 import ReactModal from 'react-modal'
@@ -29,11 +29,13 @@ import { useEffect, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { userService } from '../../services'
+import { handleFailure } from '../../handlers/errorHandler'
 
 
 const Main = () => {
 
-    const { login, user } = useAuth();
+    const { login, user, updatePlan } = useAuth();
     const currUser = localStorage.getItem("user");
     const token = localStorage.getItem("token");
     let navigate = useNavigate();
@@ -42,6 +44,7 @@ const Main = () => {
     const [showQR, setShowQR] = useState<boolean>(false);
     const [showEditLink, setShowEditLink] = useState<boolean>(false);
     const [upgradePremium, setUpgradePremium] = useState<boolean>(false);
+    const [updateError, setUpdateError] = useState<boolean>(false);
 
     useEffect(() => {
         if (currUser && currUser !== "") {
@@ -104,6 +107,18 @@ const Main = () => {
         });
     }
 
+    const handleUpgradePremium = () => {
+        userService.updatePlan(user!.userId)
+            .then(res => {
+                if (res.hasFailed()) {
+                    handleFailure(res.getStatus(), navigate);
+                    setUpdateError(true);
+                } else {
+                    updatePlan();
+                    setUpgradePremium(false);
+                }
+            })
+    }
 
     return (
         <Page>
@@ -119,7 +134,7 @@ const Main = () => {
                     <FilterContainer>
                         <Button primary onClick={() => setShowFilters(!showFilters)}>Filters</Button>
                     </FilterContainer>
-                    <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle}>
+                    <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle} ariaHideApp={false}>
                         <ModalTitleContainer>
                             <ModalTitle>Filters</ModalTitle>
                             <Button onClick={() => setShowFilters(false)}>&#10005;</Button>
@@ -142,7 +157,7 @@ const Main = () => {
                             <Button primary onClick={() => setShowFilters(false)}>Apply</Button>
                         </SelectsContainer>
                     </ReactModal>
-                    <ReactModal isOpen={showQR} style={modalStyle}>
+                    <ReactModal isOpen={showQR} style={modalStyle} ariaHideApp={false}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <ModalTitleContainer>
                                 <ModalTitle>QR Code</ModalTitle>
@@ -154,7 +169,7 @@ const Main = () => {
                             <Button primary onClick={() => setShowQR(false)} style={{ alignSelf: "center" }}>Save</Button>
                         </div>
                     </ReactModal>
-                    <ReactModal id={"right-modal"} isOpen={showEditLink} style={rightModalStyle} closeTimeoutMS={500}>
+                    <ReactModal id={"right-modal"} isOpen={showEditLink} style={rightModalStyle} closeTimeoutMS={500} ariaHideApp={false}>
                         <ModalTitleContainer style={{ backgroundColor: "#D67097", margin: '0', padding: '7px 4px', height: '70px' }}>
                             <ModalTitle>Edit Link</ModalTitle>
                             <Button primary onClick={() => setShowEditLink(false)}>&#10005;</Button>
@@ -187,7 +202,7 @@ const Main = () => {
                             <Button style={{ width: '100%', margin: '0' }} onClick={() => setShowEditLink(false)}> Save </Button>
                         </div>
                     </ReactModal>
-                    <ReactModal isOpen={upgradePremium} style={modalStyle}>
+                    <ReactModal isOpen={upgradePremium} style={modalStyle} ariaHideApp={false}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
                                 <Button onClick={() => setUpgradePremium(false)}>&#10005;</Button>
@@ -196,16 +211,13 @@ const Main = () => {
                                 <ModalTitle>Premium plan</ModalTitle>
                             </ModalTitleContainer>
                             <div style={{ alignItems: 'center', flexDirection: 'column', justifyContent: 'center', display: 'flex', height: 'fit-content', width: '80%', marginBottom: '20px' }}>
-                                <h1>$24,99</h1>
+                                <h1 style={{ margin: '0 0 10px 0' }}>$24,99</h1>
                                 <p>/month</p>
-                                <div style={{ display: 'flex', justifyContent: 'center', border: '2px solid #D67097', borderRadius: '0.625em', width: '90%', marginBottom: '0.5em'}}>
-                                    Illimited URLs
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'center', border: '2px solid #D67097', borderRadius: '0.625em', width: '90%'}}>
-                                    No expiration time
-                                </div>
+                                <PremiumOptions style={{ marginBottom: '0.5em' }}>Illimited URLs</PremiumOptions>
+                                <PremiumOptions>No expiration time</PremiumOptions>
                             </div>
-                            <Button primary onClick={() => setUpgradePremium(false)} style={{ alignSelf: "center" }}>Upgrade now</Button>
+                            <Button primary onClick={handleUpgradePremium} style={{ alignSelf: "center" }}>Upgrade now</Button>
+                            {updateError && <UpdateError>Unable to update plan, please try again</UpdateError>}
                         </div>
                     </ReactModal>
 
