@@ -142,9 +142,9 @@ export const CustomInput = styled.input`
     padding:0 12px;
     margin: 5px 0;
     height: 5.5vh;
-    border: 2px solid #D67097;
+    border: 2px solid ${(props) => props.theme.colors.first};
     :focus {
-        box-shadow: 0 0 0 1px #D67097;
+        box-shadow: 0 0 0 1px ${(props) => props.theme.colors.first};
     }
 `
 export const TagsContainer = styled.div`
@@ -166,3 +166,15 @@ export const CustomA = styled.a`
     font-size: 16px;
     font-weight: 400;
 `
+export const PremiumOptions = styled.div`
+  display: flex;
+  justify-content: center;
+  border-radius: 0.625em;
+  border: 2px solid ${(props) => props.theme.colors.first};
+  width: 90%;
+`;
+
+export const UpdateError = styled.p`
+    color: ${(props) => props.theme.colors.first};
+    margin: 15px 0 0 0;
+`;

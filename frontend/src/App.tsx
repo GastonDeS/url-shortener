@@ -3,9 +3,11 @@ import './App.css';
 import { ThemeProvider } from 'styled-components';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Login from "./views/Login/index";
-import Main from "./views/Main/index"
+import Main from "./views/Main/index";
 import Register from './views/Register/index';
 import { UserProvider } from './UserContext';
+import Error404 from './views/404/index';
+import Error from './views/Error/index';
 
 const theme = {
   colors: {
@@ -30,6 +32,8 @@ function App() {
             <Route path='/login' element={<Login />} />
             <Route path='/' element={<Main/>} />
             <Route path='/register' element={<Register/>} />
+            <Route path='/error' element ={<Error/>} />
+            <Route path='*' element ={<Error404/>} />
           </Routes>
         </BrowserRouter>
       </UserProvider>

@@ -1,4 +1,5 @@
 import React from "react";
+import { plan } from "./assets/constants";
 import UserModel from "./models/UserModel";
 
 export type User = {
@@ -11,6 +12,7 @@ export type UserContext = {
   setUser: (user: UserModel) => void;
   login: (newUser: User) => void;
   logout: () => void;
+  updatePlan: () => void;
 };
 
 const UserContext = React.createContext<UserContext>(null!);
@@ -31,11 +33,21 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
   };
 
+  const updatePlan = () => {
+    let newUser = {
+      ...user!,
+      type: plan.PREMIUM
+    }
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  }
+
   const stateValues = {
     user,
     setUser,
     login,
     logout,
+    updatePlan,
   };
 
   return (

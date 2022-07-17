@@ -22,6 +22,10 @@ export default class Result<T> {
     return this.failed;
   }
 
+  public getStatus(): number {
+    return this.status;
+  }
+
   public static handleResult(response: AxiosResponse) {
     if (response.status >= status.OK && response.status <= status.SUCCESS_LIMIT) {
       return new Result(response.headers, response.status, false, response.data);

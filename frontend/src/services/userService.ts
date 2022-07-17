@@ -25,4 +25,13 @@ export class UserService {
     }
   }
 
+  public async updatePlan(userId: number): Promise<Result<any>> {
+    try {
+      const response = await axiosService.authAxiosWrapper(methods.POST, USER_BASE_URL + userId.toString(), {});
+      return Result.handleResult(response);
+    } catch (error: any) {
+      return Result.failure(error.response.status);
+    }
+  }
+
 }
