@@ -316,7 +316,6 @@ const Main = () => {
                             {updateError && <UpdateError>Unable to update plan, please try again</UpdateError>}
                         </div>
                     </ReactModal>
-
                     <DataContainer>
                         <MainLinksContainer>
                             <LinkListHeader>
@@ -344,10 +343,10 @@ const Main = () => {
                                 </LinkButtons>
                             </LinkDiv>
                             <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
-                                <b>Destination: </b><CustomA href={clickedLink?.url}>{clickedLink?.url}</CustomA></span>
+                                <b>Destination: </b><CustomA href={clickedLink?.url} target='_blank'>{clickedLink?.url}</CustomA></span>
                             <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
                                 Tags: {tags.map((elem, index) => {
-                                    return (<Pill style={{ margin: '0 10px' }}>elem</Pill>);
+                                    return (<Pill key={index} style={{ margin: '0 10px' }}>{elem}</Pill>);
                                 })}
                                 < Button onClick={() => setTags(tags => [...tags, 'pepe'])}>&#43;</Button> </span>
                             <div style={{ padding: '30px 0 10px 0' }}>
