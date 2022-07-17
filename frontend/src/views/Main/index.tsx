@@ -197,7 +197,7 @@ const Main = () => {
                 <MainContainer>
                     <FilterContainer>
                         <Button primary onClick={() => setShowFilters(!showFilters)}>Filters</Button>
-                        <Button onClick={() => setShowNewLink(true)}>new link</Button>
+                        <Button onClick={() => setShowNewLink(true)}>New link</Button>
                     </FilterContainer>
                     <ReactModal isOpen={showNewLink} style={rightModalStyle}>
                         <ModalTitleContainer style={{ backgroundColor: "#D67097", margin: '0', padding: '7px 4px', height: '70px' }}>

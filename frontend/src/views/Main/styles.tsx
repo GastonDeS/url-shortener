@@ -30,6 +30,7 @@ export const FilterContainer = styled.div`
     justify-content: flex-start;
     margin: 20px 0 10px 20px;
     box-sizing:border-box;
+    gap: 0.4em;
 `
 export const DataContainer = styled.div`
     display:flex;
@@ -82,10 +83,10 @@ export const LinkText = styled.span`
 
 export const LinkButtons = styled.div`
     display: flex;
-    justify-content: space-evenly;
-    height: 34px;
-    width: 200px;
+    height: fit-content;
+    width: fit-content;
     margin: 10px 5px;
+    gap: 0.4em;
 `
 
 export const LinkListHeader = styled.div`
