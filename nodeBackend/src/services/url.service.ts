@@ -7,6 +7,7 @@ import { ERRORS } from "../constants/error.constant";
 import UserService from "./user.service";
 import { USER_TYPE } from "../models/user.model";
 import ClickService from "./click.service";
+import { isDate } from "moment";
 
 
 class UrlService {
@@ -41,6 +42,9 @@ class UrlService {
         } else {
             await this.redisService.setExpireKeyToRedis(shortUrl, url, BASIC_PLAN_URL_TIME);
         }
+        const prettyLink: any = link;
+        prettyLink.updatedAt = undefined;
+        prettyLink.__v = undefined;
         return link;
     }
 
@@ -48,9 +52,10 @@ class UrlService {
         return await this.clickService.getHistogram(shortUrl);
     }
 
-    getUrlsFromUserId = async (userId: string, after?: Date) => {
-        if (after)
+    getUrlsFromUserId = async (userId: string, after: Date | undefined) => {
+        if (after !== null && isDate(after)) {
             return await urlModel.find({userId: userId, creationTime: {$gt: after}}, '_id userId name url shortUrl labels creationTime');
+        }
         return await urlModel.find({userId: userId});
     }
 

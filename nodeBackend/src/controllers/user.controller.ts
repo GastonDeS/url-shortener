@@ -59,7 +59,7 @@ export class UserController {
         const userId = req.user.id;
         const after: Date = new Date(req.query.after as string);
 
-        const startDate = getStartOfDate(after).toDate();
+        const startDate = getStartOfDate(after);
         try {
             if (!userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
 
