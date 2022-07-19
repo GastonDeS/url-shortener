@@ -60,7 +60,6 @@ export class UserController {
         const userId = req.params.userId;
         const after: Date = new Date(req.query.after as string);
         let labels: string | undefined = req.query.labels as string;
-        console.log(labels.split(','))
 
         const startDate = getStartOfDate(after);
         try {

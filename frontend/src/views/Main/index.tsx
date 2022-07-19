@@ -263,8 +263,11 @@ const Main = () => {
    }
 
    const applyFilters = () => {
-        if(filters.length > 0)
-            setLinks(links.filter(e => filters.every(label => e.labels.includes(label)) && e.labels.length > 0))
+        if(filters.length > 0) 
+            axiosService.authAxiosWrapper(methods.GET, `/v1/users/${user?.userId}/links`, {params: {
+                labels: filters.join(',')
+            }}, {})
+            .then((res: AxiosResponse<any, LinkData[]>) => setLinks(res.data));
         else
             setResetFilters(true);
    }
