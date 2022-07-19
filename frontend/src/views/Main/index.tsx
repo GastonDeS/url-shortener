@@ -42,8 +42,8 @@ import { createOptions, TagOptions } from './SelectData/data'
 
 
 interface HistogramData {
-    _id: string,
-    count: number
+    date: string,
+    clicks: number
 }
 
 interface ApiChartData {
@@ -214,24 +214,23 @@ const Main = () => {
     const getChartData = () => {
         axiosService.authAxiosWrapper(methods.GET, `/v1/users/link/${clickedLink?.shortUrl}`, {}, {})
             .then((res: AxiosResponse<any, ApiChartData[]>) => {
-                const filteredData: HistogramData[] = res.data.histogram.reduce((group: HistogramData[], elem: HistogramData) => {
-                    const date: string = elem._id.split('T')[0];
-                    let idx: number = -1;
-                    for (let i = 0; i < group.length; i++) {
-                        if (group[i]._id === date)
-                            idx = i;
-                    };
-                    if (idx !== - 1)
-                        group[idx].count += elem.count;
-                    else {
-                        elem._id = date;
-                        group.push(elem);
-                    }
-                    return group;
-                }, []);
-                setChartData(filteredData.map((v: HistogramData) => v.count));
-                setLabels(filteredData.map((e: HistogramData) => e._id));
-            })
+                // const filteredData: HistogramData[] = res.data.histogram.reduce((group: HistogramData[], elem: HistogramData) => {
+                //     const date: string = elem.date
+                //     // let idx: number = -1;
+                //     // for (let i = 0; i < group.length; i++) {
+                //     //     if (group[i].date === date)
+                //     //         idx = i;
+                //     // };
+                //     // if (idx !== - 1)
+                //     //     group[idx].clicks += elem.cli;
+                //     // else {
+                //     //     elem._id = date;
+                //     //     group.push(elem);
+                //     // }
+                //     return group;
+                setChartData(res.data.histogram.map((v: HistogramData) => v.clicks));
+                setLabels(res.data.histogram.map((e: HistogramData) => e.date));
+                });
     }
 
     const emitToast = () => {
