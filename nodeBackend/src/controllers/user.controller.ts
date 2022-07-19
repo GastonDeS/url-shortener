@@ -49,10 +49,10 @@ export class UserController {
         const userId = req.params.userId;
 
         try {
-            await this.userService.updatePlan(userId);
-            return res.status(200).send({role: USER_TYPE.PREMIUM});
+            const user = await this.userService.updatePlan(userId);
+            return res.status(200).send({role: user?.type});
         } catch (error) {
-            next(error);
+            next(new GenericException(ERRORS.NOT_FOUND.USER));
         }
     }
 

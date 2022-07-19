@@ -56,4 +56,17 @@ export class UrlController {
             next(error);
         }
     }
+
+    renewUrl: RequestHandler = async (req, res, next) => {
+        const shortUrl = req.params.shortUrl;
+
+        try {
+            if (!shortUrl) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
+
+            this.urlService.renewUrl(shortUrl);
+            return res.status(202).send();
+        } catch (error) {
+            next(new GenericException(ERRORS.NOT_FOUND.GENERAL));
+        }
+    }
 }

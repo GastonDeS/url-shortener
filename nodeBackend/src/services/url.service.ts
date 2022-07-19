@@ -96,7 +96,9 @@ class UrlService {
     renewUrl = async (shortUrl: string) => {
         const link = await urlModel.findOne({shortUrl});
         if (!link) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
+        await urlModel.findOneAndUpdate({shortUrl}, {lastRenew: Date.now});
         await this.redisService.setExpireKeyToRedis(shortUrl, link.url, BASIC_PLAN_URL_TIME);
+        await this.userService.useUrl(link.userId);
         return link;
     }
 
