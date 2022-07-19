@@ -63,7 +63,8 @@ export interface LinkData extends NewLinkData {
     id: string,
     creationTime: string,
     updatedAt: string,
-    totalCount: number
+    totalCount: number,
+    clicks: number;
 };
 
 
@@ -415,7 +416,7 @@ const Main = () => {
                             </LinkListHeader>
                             {links.length !== 0 && links.map((item, index) => {
                                 return (
-                                    <Link key={index} onClick={expandLink} linkData={item} totalClicks={item.totalCount} clicked={item.shortUrl === clickedLink?.shortUrl} />);
+                                    <Link key={index} onClick={expandLink} linkData={item} clicked={item.shortUrl === clickedLink?.shortUrl} />);
                             })}
                         </MainLinksContainer>
                         <ExpandedLink ref={chartDivRef}>
@@ -443,7 +444,7 @@ const Main = () => {
                                             byPs/{clickedLink?.shortUrl}
                                         </LinkText>
                                         <LinkButtons>
-                                            <Button primary onClick={(e) => { navigator.clipboard.writeText(clickedLink?.shortUrl ? clickedLink.shortUrl : ''); emitToast() }}>Copy</Button>
+                                            <Button primary onClick={(e) => { navigator.clipboard.writeText(clickedLink?.shortUrl ? `https://byps-gbn.herokuapp.com/v1/urls/${clickedLink.shortUrl}` : ''); emitToast() }}>Copy</Button>
                                             <Button onClick={() => setShowQR(true)}>QR Code</Button>
                                         </LinkButtons>
                                     </LinkDiv>
