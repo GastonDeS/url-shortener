@@ -99,7 +99,7 @@ const Main = () => {
         if (currUser && currUser !== "") {
             let newUser = {
                 accessToken: token!,
-                prettyUser: JSON.parse(currUser)
+                user: JSON.parse(currUser)
             }
             login(newUser)
             setLogged(true);
