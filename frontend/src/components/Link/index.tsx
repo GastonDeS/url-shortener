@@ -13,7 +13,6 @@ const Link = ({onClick,linkData, clicked, totalClicks}:LinkProps) => {
 
     return (
         <LinkContainer clicked={clicked} onClick = {() => onClick(linkData)} >
-            <input type= "checkbox" ></input>
             <LinkDataContainer>
                 <span><small>Created {linkData.creationTime.split(',')[0]}</small></span>
                 <span><b>{linkData.name}</b></span>

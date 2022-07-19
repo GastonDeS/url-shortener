@@ -23,7 +23,6 @@ import {
 import { Bar } from 'react-chartjs-2';
 import Select from 'react-select';
 import { DateSelectStyle, TagSelectStyle } from './SelectData/selectStyles'
-import { colourOptions } from './SelectData/data'
 import { modalStyle, rightModalStyle } from './ModalData/ModalStyle'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../UserContext'
@@ -36,11 +35,9 @@ import { methods } from '../../assets/constants'
 import axios, { AxiosResponse } from 'axios'
 import { userService } from '../../services'
 import { handleFailure } from '../../handlers/errorHandler'
-import { array, string } from 'prop-types'
-import { useForm, Resolver, SubmitHandler, useFieldArray } from 'react-hook-form'
-import { format } from 'path'
-import { animatedScrollTo } from 'react-select/dist/declarations/src/utils'
-import { link } from 'fs'
+import { array, element, string } from 'prop-types'
+import { useForm } from 'react-hook-form'
+import { createOptions, TagOptions } from './SelectData/data'
 
 
 
@@ -91,9 +88,12 @@ const Main = () => {
     const [labels, setLabels] = useState<string[]>([]);
     const [upgradePremium, setUpgradePremium] = useState<boolean>(false);
     const [updateError, setUpdateError] = useState<boolean>(false);
-    const { register,setValue, handleSubmit, reset } = useForm<NewLinkData>();
+    const { register, setValue, handleSubmit, reset } = useForm<NewLinkData>();
     const [newLinkCreated, setNewLinkCreated] = useState(false);
-    const [newLinkTags, setNewLinkTags] = useState([]);
+    const [newLinkTags, setNewLinkTags] = useState<string[]>([]);
+    const [allTags, setAllTags] = useState<string[]>([]);
+    const [filters, setFilters] = useState<string[]>([]);
+    const [resetFilters, setResetFilters] = useState<boolean>(false)
 
     useEffect(() => {
         if (currUser && currUser !== "") {
@@ -115,9 +115,9 @@ const Main = () => {
     }
 
     const addNewTag = (value: string) => {
-        if (!tags.includes(value)){
-            setTags(tags => [...tags, value]);
-            setValue("labels", [...tags, value])
+        if (!tags.includes(value)) {
+            setNewLinkTags(newLinkTags => [...newLinkTags, value]);
+            setValue("labels", [...newLinkTags, value])
         }
         if (tagInputRef.current?.value)
             tagInputRef.current.value = "";
@@ -125,8 +125,8 @@ const Main = () => {
     }
 
     const removeTag = (value: string) => {
-        setTags(tags.filter(t => t !== value));
-        setValue("labels", tags.filter(t => t !== value));
+        setNewLinkTags(newLinkTags.filter(t => t !== value));
+        setValue("labels", newLinkTags.filter(t => t !== value));
     }
 
     useEffect(() => {
@@ -137,20 +137,28 @@ const Main = () => {
                     setNewLinkCreated(false);
                     reset();
                     setValue("labels", []);
-                    ans.data.forEach((el:LinkData) => el.creationTime = new Date(el.creationTime).toLocaleDateString("en-US",  {
+                    ans.data.forEach((el: LinkData) => el.creationTime = new Date(el.creationTime).toLocaleDateString("en-US", {
                         day: "numeric",
                         month: "long",
                         year: "numeric",
                         hour: "numeric",
                         minute: "numeric"
-                      }));
-                    console.log(ans.data);
+                    }));
                     setLinks(ans.data)
                     setClickedLink(ans.data[0]);
+                    let auxTags: string[] = [];
+                    ans.data.forEach((el: LinkData) => {
+                        el.labels.forEach(label => {
+                            if (!auxTags.includes(label))
+                                auxTags.push(label)
+                        })
+                    });
+                    setAllTags(auxTags);
+                    setResetFilters(false);
                 });
 
         }
-    }, [logged, newLinkCreated]);
+    }, [logged, newLinkCreated, resetFilters]);
 
 
 
@@ -161,7 +169,6 @@ const Main = () => {
     const createNewLink = (newLinkData: NewLinkData) => {
         axiosService.authAxiosWrapper(methods.POST, `/v1/urls`, {}, newLinkData)
             .then(res => {
-                console.log(res.status);
                 setNewLinkCreated(true);
                 setShowNewLink(false);
             })
@@ -226,8 +233,6 @@ const Main = () => {
             })
     }
 
-
-
     const emitToast = () => {
         toast('\u2705 Copied to clipboard!', {
             autoClose: 1000,
@@ -251,6 +256,18 @@ const Main = () => {
                 }
             })
     }
+
+   const modifyFilters = (filters:string[]) => {
+        console.log(filters);
+        setFilters(filters);
+   }
+
+   const applyFilters = () => {
+        if(filters.length > 0)
+            setLinks(links.filter(e => filters.every(label => e.labels.includes(label)) && e.labels.length > 0))
+        else
+            setResetFilters(true);
+   }
 
     return (
         <Page>
@@ -289,12 +306,12 @@ const Main = () => {
                                 <InputTitle>Tags</InputTitle>
                                 <div style={{ display: 'flex', width: '100%' }}>
                                     <CustomInput ref={tagInputRef} style={{ borderRadius: '22px', marginRight: '10px', width: '75%' }} placeholder="Create new tags" type={"text"} />
-                                    <Button type ='button' onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value)}>&#43;</Button>
+                                    <Button type='button' onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value)}>&#43;</Button>
                                 </div>
                                 <TagsContainer>
-                                    {tags.map((tag, idx) => {
+                                    {newLinkTags.map((tag, idx) => {
                                         return (
-                                            <Pill key={idx}>{tag}<PillButton type='button' onClick={() => { removeTag(tag);  }}>&#10005;</PillButton></Pill>
+                                            <Pill key={idx}>{tag}<PillButton type='button' onClick={() => { removeTag(tag); }}>&#10005;</PillButton></Pill>
                                         );
                                     })}
                                 </TagsContainer>
@@ -304,27 +321,28 @@ const Main = () => {
                         </form>
                     </ReactModal>
                     <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle} ariaHideApp={false}>
-                        <ModalTitleContainer>
-                            <ModalTitle>Filters</ModalTitle>
-                            <Button onClick={() => setShowFilters(false)}>&#10005;</Button>
-                        </ModalTitleContainer>
-                        <SelectsContainer>
-                            <CustomSelectContainer>
-                                <span>Tags</span>
-                                <Select
-                                    closeMenuOnSelect={false}
-                                    defaultValue={[colourOptions[0], colourOptions[1]]}
-                                    isMulti
-                                    options={colourOptions}
-                                    styles={TagSelectStyle}
-                                />
-                            </CustomSelectContainer>
-                            <CustomSelectContainer>
-                                <span>Since</span>
-                                <Select options={[{ value: 'date', label: "12/12/12" }, { value: 'date2', label: "13/12/12" }]} styles={DateSelectStyle} />
-                            </CustomSelectContainer>
-                            <Button primary onClick={() => setShowFilters(false)}>Apply</Button>
-                        </SelectsContainer>
+                            <ModalTitleContainer>
+                                <ModalTitle>Filters</ModalTitle>
+                                <Button onClick={() => setShowFilters(false)}>&#10005;</Button>
+                            </ModalTitleContainer>
+                            <SelectsContainer>
+                                <CustomSelectContainer>
+                                    <span>Tags</span>
+                                    <Select
+                                        onChange={(options) => modifyFilters(options.map(o => o.value))}
+                                        closeMenuOnSelect={false}
+                                        isMulti
+                                        options={allTags ? createOptions(allTags) : []}
+                                        value={createOptions(filters)}
+                                        styles={TagSelectStyle}
+                                    />
+                                </CustomSelectContainer>
+                                <CustomSelectContainer>
+                                    <span>Since</span>
+                                    <Select options={[{ value: 'date', label: "12/12/12" }, { value: 'date2', label: "13/12/12" }]} styles={DateSelectStyle} />
+                                </CustomSelectContainer>
+                                <Button primary onClick={() => {setShowFilters(false);applyFilters()}}>Apply</Button>
+                            </SelectsContainer>
                     </ReactModal>
                     <ReactModal isOpen={showQR} style={modalStyle} ariaHideApp={false}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -394,7 +412,7 @@ const Main = () => {
                             </LinkListHeader>
                             {links.length !== 0 && links.map((item, index) => {
                                 return (
-                                <Link key={index} onClick={expandLink} linkData={item} totalClicks = {item.totalCount} clicked={item.shortUrl === clickedLink?.shortUrl} />);
+                                    <Link key={index} onClick={expandLink} linkData={item} totalClicks={item.totalCount} clicked={item.shortUrl === clickedLink?.shortUrl} />);
                             })}
                         </MainLinksContainer>
                         <ExpandedLink ref={chartDivRef}>

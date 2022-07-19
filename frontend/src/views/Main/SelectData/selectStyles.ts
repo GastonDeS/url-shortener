@@ -1,8 +1,8 @@
 import chroma from "chroma-js";
 import { StylesConfig } from "react-select";
-import { ColourOption } from "./data";
+import { TagOptions } from "./data";
 
-export const TagSelectStyle: StylesConfig<ColourOption, true> = {
+export const TagSelectStyle: StylesConfig<TagOptions, true> = {
     control: (styles, state) => ({
         ...styles,
         backgroundColor: 'white',
@@ -22,7 +22,7 @@ export const TagSelectStyle: StylesConfig<ColourOption, true> = {
         },
     }),
     option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-        const color = chroma(data.color);
+        const color = chroma('red');
         return {
             ...styles,
             backgroundColor: isSelected
@@ -34,20 +34,20 @@ export const TagSelectStyle: StylesConfig<ColourOption, true> = {
                 ? chroma.contrast(color, 'white') > 2
                     ? 'white'
                     : 'black'
-                : data.color,
+                : 'blue',
             cursor: isDisabled ? 'not-allowed' : 'default',
             ':active': {
                 ...styles[':active'],
                 backgroundColor: !isDisabled
                     ? isSelected
-                        ? data.color
+                        ? 'blue'
                         : color.alpha(0.3).css()
                     : undefined,
             },
         };
     },
     multiValue: (styles, { data }) => {
-        const color = chroma(data.color);
+        const color = chroma('red');
         return {
             ...styles,
             backgroundColor: color.alpha(0.1).css(),
@@ -55,13 +55,13 @@ export const TagSelectStyle: StylesConfig<ColourOption, true> = {
     },
     multiValueLabel: (styles, { data }) => ({
         ...styles,
-        color: data.color,
+        color: 'red',
     }),
     multiValueRemove: (styles, { data }) => ({
         ...styles,
-        color: data.color,
+        color:'red',
         ':hover': {
-            backgroundColor: data.color,
+            backgroundColor: 'red',
             color: 'white',
         },
     }),
