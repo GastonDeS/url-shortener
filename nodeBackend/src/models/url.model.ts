@@ -6,6 +6,7 @@ export interface IUrl extends Document {
     shortUrl: string,
     url: string,
     labels: string[],
+    clicks: number
 }
 
 const UrlSchema: Schema = new mongoose.Schema({
@@ -14,6 +15,7 @@ const UrlSchema: Schema = new mongoose.Schema({
     url: {type: String, required: true },
     shortUrl: {type: String, unique: true, index: true, required: true},
     labels: {type: [String] },
+    clicks: {type: Number, default: 0}
 },{ timestamps: { createdAt: 'creationTime' } });
 
 export default mongoose.model<IUrl>('Url', UrlSchema);

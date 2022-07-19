@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express';
 import { ERRORS } from '../constants/error.constant';
+import { HISTOGRAM_INTERVALS } from '../constants/general.constant';
 import GenericException from '../exceptions/generic.exception';
 import { getStartOfDate } from '../helpers/date.helper';
 import { USER_TYPE } from '../models/user.model';
@@ -72,9 +73,12 @@ export class UserController {
 
     getFullUrlData: RequestHandler = async (req, res, next) => {
         const shortUrl = req.params.shortUrl;
+        let interval: HISTOGRAM_INTERVALS = req.query.interval as HISTOGRAM_INTERVALS;
 
         try {
-            const urls = await this.urlService.getUrlFullData(shortUrl);
+            if (!interval || interval !== HISTOGRAM_INTERVALS.DAY) interval = HISTOGRAM_INTERVALS.MONTH;
+
+            const urls = await this.urlService.getUrlFullData(shortUrl, interval);
             return res.send(urls);
         } catch (error) {
             next(error);

@@ -22,7 +22,8 @@ export class UrlController {
             const link = await this.urlService.addUrl(userId, name, shortUrl, url, labels);
             return res.status(201).send({link});
         } catch (error) {
-            next(error);
+            if (error instanceof GenericException) next(error)
+            next(new GenericException(ERRORS.CONFLICT.URL));
         }
     }
 

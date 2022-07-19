@@ -31,7 +31,7 @@ class UserAuthService {
 
         const accessToken = this.signAccessToken(user._id.toString(), user.email);
         const prettyUser = this.userService.prettyUser(user);
-        return {prettyUser, accessToken};
+        return {user: prettyUser, accessToken};
     }
 
     verifyToken = (token: string) : string | jwt.JwtPayload=> {
