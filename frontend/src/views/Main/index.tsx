@@ -37,6 +37,9 @@ import axios, { AxiosResponse } from 'axios'
 import { userService } from '../../services'
 import { handleFailure } from '../../handlers/errorHandler'
 import { array, string } from 'prop-types'
+import { useForm, Resolver, SubmitHandler, useFieldArray } from 'react-hook-form'
+import { format } from 'path'
+
 
 
 interface HistogramData {
@@ -64,6 +67,7 @@ export interface LinkData extends NewLinkData {
     totalCount: number
 };
 
+
 const Main = () => {
 
     const { login, user, updatePlan } = useAuth();
@@ -83,9 +87,10 @@ const Main = () => {
     const chartDivRef = useRef<HTMLDivElement>(null);
     const [chartData, setChartData] = useState<number[]>([]);
     const [labels, setLabels] = useState<string[]>([]);
-
     const [upgradePremium, setUpgradePremium] = useState<boolean>(false);
     const [updateError, setUpdateError] = useState<boolean>(false);
+    const { register,setValue, handleSubmit } = useForm<NewLinkData>();
+    const [newLinkCreated, setNewLinkCreated] = useState(false);
 
     useEffect(() => {
         if (currUser && currUser !== "") {
@@ -107,18 +112,22 @@ const Main = () => {
     }
 
     const addNewTag = (value: string) => {
-        if (!tags.includes(value))
+        if (!tags.includes(value)){
             setTags(tags => [...tags, value]);
+            setValue("labels", [...tags, value])
+        }
         if (tagInputRef.current?.value)
             tagInputRef.current.value = "";
+
     }
 
     const removeTag = (value: string) => {
         setTags(tags.filter(t => t !== value));
+        setValue("labels", tags.filter(t => t !== value));
     }
 
 
-    const createLink = () => {
+    const createLink: SubmitHandler<NewLinkData> = () => {
         const user = JSON.parse(currUser ? currUser : "");
         const data = {
             url: 'https://instagram.com.ar',
@@ -134,21 +143,27 @@ const Main = () => {
             console.log(user);
             axiosService.authAxiosWrapper<LinkData[]>(methods.GET, `/v1/users/${user.userId}/links`, {}, {})
                 .then((ans: AxiosResponse<any, LinkData[]>) => {
-                  ans.data.forEach((element:LinkData) => {
-                        axiosService.authAxiosWrapper(methods.GET, `/v1/users/link/${element.shortUrl}`,{},{} )
-                        .then((ans:any) => { element.totalCount = ans.data.totalCount})
+                    ans.data.forEach((element: LinkData) => {
+                        axiosService.authAxiosWrapper(methods.GET, `/v1/users/link/${element.shortUrl}`, {}, {})
+                            .then((ans: any) => { element.totalCount = ans.data.totalCount })
                     })
                     setLinks(ans.data)
                     setClickedLink(ans.data[0]);
+                    setNewLinkCreated(false);
                 });
         }
-    }, [logged]);
+    }, [logged, newLinkCreated]);
 
+    useEffect(() => {
+        setShow(false);
+    }, [clickedLink])
 
-    const checkNewLink = (newLinkData: NewLinkData) => {
+    const createNewLink = (newLinkData: NewLinkData) => {
         axiosService.authAxiosWrapper(methods.POST, `/v1/urls`, {}, newLinkData)
             .then(res => {
                 console.log(res.status);
+                setNewLinkCreated(true);
+                setShowNewLink(false);
             })
     };
 
@@ -257,34 +272,36 @@ const Main = () => {
                             <ModalTitle>New Link</ModalTitle>
                             <Button primary onClick={() => setShowNewLink(false)}>&#10005;</Button>
                         </ModalTitleContainer>
-                        <div style={{ display: 'flex', flexDirection: 'column', margin: '15px' }}>
+                        <form style={{ display: 'flex', flexDirection: 'column', margin: '15px' }} onSubmit={handleSubmit(createNewLink)}>
                             <EditLinkContainer>
                                 <InputTitle>Link Title</InputTitle>
-                                <CustomInput type={"text"} placeholder="Choose your link title"></CustomInput>
+                                <CustomInput {...register("name")} type={"text"} placeholder="Choose your link title"></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Long Link</InputTitle>
-                                <CustomInput type={"text"} placeholder="Paste the destination URL" ></CustomInput>
+                                <CustomInput {...register("url")} type={"text"} placeholder="Paste the destination URL" ></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Short Link</InputTitle>
-                                <CustomInput type={"text"} placeholder="Choose your shortened link"></CustomInput>
+                                <CustomInput {...register("shortUrl")} type={"text"} placeholder="Choose your shortened link"></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Tags</InputTitle>
                                 <div style={{ display: 'flex', width: '100%' }}>
                                     <CustomInput ref={tagInputRef} style={{ borderRadius: '22px', marginRight: '10px', width: '75%' }} placeholder="Create new tags" type={"text"} />
-                                    <Button onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value)}>&#43;</Button>
+                                    <Button type ='button' onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value)}>&#43;</Button>
                                 </div>
                                 <TagsContainer>
                                     {tags.map((tag, idx) => {
-                                        return (<Pill key={idx}>{tag}<PillButton onClick={() => removeTag(tag)}>&#10005;</PillButton></Pill>);
+                                        return (
+                                            <Pill key={idx}>{tag}<PillButton type='button' onClick={() => { removeTag(tag);  }}>&#10005;</PillButton></Pill>
+                                        );
                                     })}
                                 </TagsContainer>
                             </EditLinkContainer>
                             <hr style={{ margin: '3px 0 20px 0' }} />
-                            <Button style={{ width: '100%', margin: '0' }} onClick={() => setShowEditLink(false)}> Save </Button>
-                        </div>
+                            <Button style={{ width: '100%', margin: '0' }} type="submit"> Create link </Button>
+                        </form>
                     </ReactModal>
                     <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle} ariaHideApp={false}>
                         <ModalTitleContainer>
@@ -318,7 +335,7 @@ const Main = () => {
                             <div style={{ alignSelf: 'center', justifyContent: 'center', display: 'flex', height: 'fit-content', width: 'fit-content', margin: '15px 0 30px 0' }}>
                                 <QRCodeCanvas size={324} value={clickedLink?.url ? clickedLink.url : ""} fgColor='#D67097' />
                             </div>
-                            <Button primary onClick={() => setShowQR(false)} style={{ alignSelf: "center" }}>Save</Button>
+                            <Button primary onClick={() => setShowQR(false)} style={{ alignSelf: "center" }}>Done!</Button>
                         </div>
                     </ReactModal>
                     <ReactModal id={"right-modal"} isOpen={showEditLink} style={rightModalStyle} closeTimeoutMS={500} ariaHideApp={false}>
@@ -393,8 +410,8 @@ const Main = () => {
                                         <Button onClick={() => setShowEditLink(true)}>Edit</Button>
                                     </div>
                                     <span style={{ alignSelf: 'flex-start', margin: '10px' }}>{
-                                        clickedLink && 
-                                          `${clickedLink.creationTime.split('T')[0]} at ${clickedLink.creationTime.split('T')[1].split('.')[0]}`
+                                        clickedLink &&
+                                        `${clickedLink.creationTime.split('T')[0]} at ${clickedLink.creationTime.split('T')[1].split('.')[0]}`
                                     } by {JSON.parse(currUser ? currUser : "").username}</span>
                                     <LinkDiv>
                                         <LinkText>
