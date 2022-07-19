@@ -39,6 +39,8 @@ import { handleFailure } from '../../handlers/errorHandler'
 import { array, string } from 'prop-types'
 import { useForm, Resolver, SubmitHandler, useFieldArray } from 'react-hook-form'
 import { format } from 'path'
+import { animatedScrollTo } from 'react-select/dist/declarations/src/utils'
+import { link } from 'fs'
 
 
 
@@ -89,8 +91,9 @@ const Main = () => {
     const [labels, setLabels] = useState<string[]>([]);
     const [upgradePremium, setUpgradePremium] = useState<boolean>(false);
     const [updateError, setUpdateError] = useState<boolean>(false);
-    const { register,setValue, handleSubmit } = useForm<NewLinkData>();
+    const { register,setValue, handleSubmit, reset } = useForm<NewLinkData>();
     const [newLinkCreated, setNewLinkCreated] = useState(false);
+    const [newLinkTags, setNewLinkTags] = useState([]);
 
     useEffect(() => {
         if (currUser && currUser !== "") {
@@ -126,33 +129,30 @@ const Main = () => {
         setValue("labels", tags.filter(t => t !== value));
     }
 
-
-    const createLink: SubmitHandler<NewLinkData> = () => {
-        const user = JSON.parse(currUser ? currUser : "");
-        const data = {
-            url: 'https://instagram.com.ar',
-            shortUrl: 'ig_god',
-            labels: ['important']
-        }
-        axiosService.authAxiosWrapper(methods.POST, `/v1/urls`, {}, data);
-    }
-
     useEffect(() => {
         if (logged) {
             const user = JSON.parse(currUser ? currUser : "");
-            console.log(user);
             axiosService.authAxiosWrapper<LinkData[]>(methods.GET, `/v1/users/${user.userId}/links`, {}, {})
                 .then((ans: AxiosResponse<any, LinkData[]>) => {
-                    ans.data.forEach((element: LinkData) => {
-                        axiosService.authAxiosWrapper(methods.GET, `/v1/users/link/${element.shortUrl}`, {}, {})
-                            .then((ans: any) => { element.totalCount = ans.data.totalCount })
-                    })
+                    setNewLinkCreated(false);
+                    reset();
+                    setValue("labels", []);
+                    ans.data.forEach((el:LinkData) => el.creationTime = new Date(el.creationTime).toLocaleDateString("en-US",  {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "numeric"
+                      }));
+                    console.log(ans.data);
                     setLinks(ans.data)
                     setClickedLink(ans.data[0]);
-                    setNewLinkCreated(false);
                 });
+
         }
     }, [logged, newLinkCreated]);
+
+
 
     useEffect(() => {
         setShow(false);
@@ -393,7 +393,8 @@ const Main = () => {
                                 <span>Clicks</span>
                             </LinkListHeader>
                             {links.length !== 0 && links.map((item, index) => {
-                                return (<Link key={index} onClick={expandLink} linkData={item} clicked={item.shortUrl === clickedLink?.shortUrl} />);
+                                return (
+                                <Link key={index} onClick={expandLink} linkData={item} totalClicks = {item.totalCount} clicked={item.shortUrl === clickedLink?.shortUrl} />);
                             })}
                         </MainLinksContainer>
                         <ExpandedLink ref={chartDivRef}>
@@ -411,7 +412,7 @@ const Main = () => {
                                     </div>
                                     <span style={{ alignSelf: 'flex-start', margin: '10px' }}>{
                                         clickedLink &&
-                                        `${clickedLink.creationTime.split('T')[0]} at ${clickedLink.creationTime.split('T')[1].split('.')[0]}`
+                                        `${clickedLink.creationTime.split(',')[0]} at ${clickedLink.creationTime.split(',')[1]}`
                                     } by {JSON.parse(currUser ? currUser : "").username}</span>
                                     <LinkDiv>
                                         <LinkText>

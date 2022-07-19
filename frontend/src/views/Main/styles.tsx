@@ -2,13 +2,19 @@ import styled from "styled-components";
 
 export const MainLinksContainer = styled.div`
     display:flex;
-    width: 480px;
     background: #f5edeb;
-    height: 100%;
+    height: calc(100vh - 222px);
     align-self: flex-start;
     flex-direction: column;
     align-items: flex-start;
     min-height: 300px;
+    min-width: calc(480px + calc(100vw - 100%));
+    -ms-overflow-style: none; /* for Internet Explorer, Edge */
+    scrollbar-width: none; /* for Firefox */
+    overflow-y: scroll;
+    ::-webkit-scrollbar {
+        display: none;
+    }
 `
 
 export const MainContainer = styled.div`
