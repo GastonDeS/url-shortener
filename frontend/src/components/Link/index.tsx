@@ -1,15 +1,15 @@
 import { LinkContainer, LinkDataContainer } from "./styles";
 import { useState } from "react";
 import { LinkData } from "../../views/Main";
+import { link } from "fs";
 
 interface LinkProps {
     linkData: LinkData;
     onClick?: any;
     clicked: boolean;
-    totalClicks: number;
 }
 
-const Link = ({onClick,linkData, clicked, totalClicks}:LinkProps) => {
+const Link = ({onClick,linkData, clicked}:LinkProps) => {
 
     return (
         <LinkContainer clicked={clicked} onClick = {() => onClick(linkData)} >
@@ -20,7 +20,7 @@ const Link = ({onClick,linkData, clicked, totalClicks}:LinkProps) => {
             </LinkDataContainer>
             <div style={{display: 'flex', alignItems: 'center', fontSize: '20px'}}>
                🖱️
-            {totalClicks}</div>
+            {linkData.clicks}</div>
         </LinkContainer>
     )
 }
