@@ -56,7 +56,7 @@ class UrlService {
         if (after !== null && isDate(after)) {
             return await urlModel.find({userId: userId, creationTime: {$gt: after}}, '_id userId name url shortUrl labels creationTime');
         }
-        return await urlModel.find({userId: userId});
+        return await urlModel.find({userId: userId}, '_id userId name url shortUrl labels creationTime');
     }
 
     getUrlFromShort = async (shortUrl: string, redis = true) => {

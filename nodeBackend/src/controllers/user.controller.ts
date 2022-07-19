@@ -45,7 +45,7 @@ export class UserController {
     }
 
     updatePlan: RequestHandler = async (req, res, next) => {
-        const userId = req.user.id;
+        const userId = req.params.userId;
 
         try {
             await this.userService.updatePlan(userId);
@@ -56,7 +56,7 @@ export class UserController {
     }
 
     getUrlsFromUser: RequestHandler = async (req, res, next) => {
-        const userId = req.user.id;
+        const userId = req.params.userId;
         const after: Date = new Date(req.query.after as string);
 
         const startDate = getStartOfDate(after);
