@@ -18,6 +18,7 @@ import {
     Title,
     Tooltip,
     Legend,
+    ChartData,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import Select from 'react-select';
@@ -32,19 +33,36 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { axiosService } from '../../services'
 import { methods } from '../../assets/constants'
-import { AxiosResponse } from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { userService } from '../../services'
 import { handleFailure } from '../../handlers/errorHandler'
+import { array, string } from 'prop-types'
 
 
-export interface LinkData {
-    id: string,
+interface HistogramData {
+    _id: string,
+    count: number
+}
+
+interface ApiChartData {
+    histogram: HistogramData[],
+    totalCount: number;
+
+}
+export interface NewLinkData {
     userId: string,
     url: string,
     shortUrl: string,
-    v: number,
+    name: string,
     labels: string[]
-}
+};
+
+export interface LinkData extends NewLinkData {
+    id: string,
+    creationTime: string,
+    updatedAt: string,
+    totalCount: number
+};
 
 const Main = () => {
 
@@ -62,7 +80,9 @@ const Main = () => {
     const [links, setLinks] = useState<LinkData[]>([]);
     const [clickedLink, setClickedLink] = useState<LinkData>();
     const tagInputRef = useRef<HTMLInputElement>(null);
-    const chartDivRef = useRef<HTMLDivElement>(null)
+    const chartDivRef = useRef<HTMLDivElement>(null);
+    const [chartData, setChartData] = useState<number[]>([]);
+    const [labels, setLabels] = useState<string[]>([]);
 
     const [upgradePremium, setUpgradePremium] = useState<boolean>(false);
     const [updateError, setUpdateError] = useState<boolean>(false);
@@ -79,10 +99,6 @@ const Main = () => {
             navigate('/login')
         }
     }, [])
-
-    const addTag = () => {
-        setTags(tags => [...tags, 'pepe'])
-    }
 
     const expandLink = (link: LinkData) => {
         setClickedLink(link);
@@ -115,13 +131,26 @@ const Main = () => {
     useEffect(() => {
         if (logged) {
             const user = JSON.parse(currUser ? currUser : "");
-            axiosService.authAxiosWrapper<LinkData[]>(methods.GET, `/v1/users/${user._id}/links`, {}, {})
+            console.log(user);
+            axiosService.authAxiosWrapper<LinkData[]>(methods.GET, `/v1/users/${user.userId}/links`, {}, {})
                 .then((ans: AxiosResponse<any, LinkData[]>) => {
+                  ans.data.forEach((element:LinkData) => {
+                        axiosService.authAxiosWrapper(methods.GET, `/v1/users/link/${element.shortUrl}`,{},{} )
+                        .then((ans:any) => { element.totalCount = ans.data.totalCount})
+                    })
                     setLinks(ans.data)
                     setClickedLink(ans.data[0]);
                 });
         }
     }, [logged]);
+
+
+    const checkNewLink = (newLinkData: NewLinkData) => {
+        axiosService.authAxiosWrapper(methods.POST, `/v1/urls`, {}, newLinkData)
+            .then(res => {
+                console.log(res.status);
+            })
+    };
 
     ChartJS.register(
         CategoryScale,
@@ -147,18 +176,42 @@ const Main = () => {
             },
         },
     };
-
-    const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
-    const data = {
+    let cdata = {
         labels,
         datasets: [
             {
                 label: 'Clicks',
-                data: labels.map(() => Math.random() * 10),
+                data: chartData,
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
             },
         ],
     };
+
+
+    const getChartData = () => {
+        axiosService.authAxiosWrapper(methods.GET, `/v1/users/link/${clickedLink?.shortUrl}`, {}, {})
+            .then((res: AxiosResponse<any, ApiChartData[]>) => {
+                const filteredData: HistogramData[] = res.data.histogram.reduce((group: HistogramData[], elem: HistogramData) => {
+                    const date: string = elem._id.split('T')[0];
+                    let idx: number = -1;
+                    for (let i = 0; i < group.length; i++) {
+                        if (group[i]._id === date)
+                            idx = i;
+                    };
+                    if (idx !== - 1)
+                        group[idx].count += elem.count;
+                    else {
+                        elem._id = date;
+                        group.push(elem);
+                    }
+                    return group;
+                }, []);
+                setChartData(filteredData.map((v: HistogramData) => v.count));
+                setLabels(filteredData.map((e: HistogramData) => e._id));
+            })
+    }
+
+
 
     const emitToast = () => {
         toast('\u2705 Copied to clipboard!', {
@@ -207,15 +260,15 @@ const Main = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', margin: '15px' }}>
                             <EditLinkContainer>
                                 <InputTitle>Link Title</InputTitle>
-                                <CustomInput type={"text"}></CustomInput>
+                                <CustomInput type={"text"} placeholder="Choose your link title"></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Long Link</InputTitle>
-                                <CustomInput type={"text"} ></CustomInput>
+                                <CustomInput type={"text"} placeholder="Paste the destination URL" ></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Short Link</InputTitle>
-                                <CustomInput type={"text"}></CustomInput>
+                                <CustomInput type={"text"} placeholder="Choose your shortened link"></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Tags</InputTitle>
@@ -300,7 +353,7 @@ const Main = () => {
                     </ReactModal>
                     <ReactModal isOpen={upgradePremium} style={modalStyle} ariaHideApp={false}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
+                            <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
                                 <Button onClick={() => setUpgradePremium(false)}>&#10005;</Button>
                             </div>
                             <ModalTitleContainer>
@@ -327,44 +380,57 @@ const Main = () => {
                             })}
                         </MainLinksContainer>
                         <ExpandedLink ref={chartDivRef}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                <span style={{ alignSelf: 'flex-start', margin: '10px', fontSize: '34px', fontWeight: '500' }}>Main Text</span>
-                                <Button onClick={() => setShowEditLink(true)}>Edit</Button>
-                            </div>
-                            <span style={{ alignSelf: 'flex-start', margin: '10px' }}>3 ago 01:32 by GastonDeSchant</span>
-                            <LinkDiv>
-                                <LinkText>
-                                    <img src={require('../../linkLogo.png')} width='25px' style={{ verticalAlign: 'middle', margin: '0 7px 4px 0' }} />
-                                    byPs/{clickedLink?.shortUrl}
-                                </LinkText>
-                                <LinkButtons>
-                                    <Button primary onClick={(e) => { navigator.clipboard.writeText(clickedLink?.shortUrl ? clickedLink.shortUrl : ''); emitToast() }}>Copy</Button>
-                                    <Button onClick={() => setShowQR(true)}>QR Code</Button>
-                                </LinkButtons>
-                            </LinkDiv>
-                            <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
-                                <b>Destination: </b><CustomA href={clickedLink?.url} target='_blank'>{clickedLink?.url}</CustomA></span>
-                            <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
-                                Tags: {tags.map((elem, index) => {
-                                    return (<Pill key={index} style={{ margin: '0 10px' }}>{elem}</Pill>);
-                                })}
-                                < Button onClick={() => setTags(tags => [...tags, 'pepe'])}>&#43;</Button> </span>
-                            <div style={{ padding: '30px 0 10px 0' }}>
-                                <Button onClick={async () => {
-                                    setShow(!show);
-                                    await new Promise(r => setTimeout(r, 400));
-                                    if(chartDivRef.current){
-                                        chartDivRef.current.scroll({top: chartDivRef.current.scrollHeight - 1, behavior: 'smooth'})
-                                    }
-                                }}>
-                                    {show ? "\u2191" : "\u2193"} {show ? 'Hide' : 'Show'} Stats {show ? '\u2191' : '\u2193'}
-                                </Button>
-                            </div>
-                            <CCollapse style={{ width: '55rem' }} visible={show} >
-                                <CCard style={{ background: 'transparent', margin: '10px' }}>
-                                    <CCardBody><Bar options={options} data={data} /></CCardBody>
-                                </CCard>
-                            </CCollapse>
+                            {links.length === 0 ?
+                                <>
+                                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '100%' }}>
+                                        <span style={{ alignSelf: 'center', margin: '20px', fontSize: '34px', fontWeight: '500' }}>You don't have any links yet!</span>
+                                        <Button onClick={() => setShowNewLink(true)} style={{ marginTop: '20px' }}>New Link</Button>
+                                    </div>
+                                </> :
+                                <>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                        <span style={{ alignSelf: 'flex-start', margin: '10px', fontSize: '34px', fontWeight: '500' }}>{clickedLink?.name}</span>
+                                        <Button onClick={() => setShowEditLink(true)}>Edit</Button>
+                                    </div>
+                                    <span style={{ alignSelf: 'flex-start', margin: '10px' }}>{
+                                        clickedLink && 
+                                          `${clickedLink.creationTime.split('T')[0]} at ${clickedLink.creationTime.split('T')[1].split('.')[0]}`
+                                    } by {JSON.parse(currUser ? currUser : "").username}</span>
+                                    <LinkDiv>
+                                        <LinkText>
+                                            <img src={require('../../linkLogo.png')} width='25px' style={{ verticalAlign: 'middle', margin: '0 7px 4px 0' }} />
+                                            byPs/{clickedLink?.shortUrl}
+                                        </LinkText>
+                                        <LinkButtons>
+                                            <Button primary onClick={(e) => { navigator.clipboard.writeText(clickedLink?.shortUrl ? clickedLink.shortUrl : ''); emitToast() }}>Copy</Button>
+                                            <Button onClick={() => setShowQR(true)}>QR Code</Button>
+                                        </LinkButtons>
+                                    </LinkDiv>
+                                    <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
+                                        <b>Destination: </b><CustomA href={clickedLink?.url} target='_blank'>{clickedLink?.url}</CustomA></span>
+                                    <span style={{ alignSelf: 'flex-start', margin: '0 10px', padding: '22px 0', borderBottom: '1px solid pink', width: '95%' }}>
+                                        Tags: {tags.map((elem, index) => {
+                                            return (<Pill key={index} style={{ margin: '0 10px' }}>{elem}</Pill>);
+                                        })}
+                                        < Button onClick={() => setShowEditLink(true)}>&#43;</Button> </span>
+                                    <div style={{ padding: '30px 0 10px 0' }}>
+                                        <Button onClick={async () => {
+                                            setShow(!show);
+                                            await new Promise(r => setTimeout(r, 400));
+                                            getChartData();
+                                            if (chartDivRef.current) {
+                                                chartDivRef.current.scroll({ top: chartDivRef.current.scrollHeight - 1, behavior: 'smooth' })
+                                            }
+                                        }}>
+                                            {show ? "\u2191" : "\u2193"} {show ? 'Hide' : 'Show'} Stats {show ? '\u2191' : '\u2193'}
+                                        </Button>
+                                    </div>
+                                    <CCollapse style={{ width: '55rem' }} visible={show} >
+                                        <CCard style={{ background: 'transparent', margin: '10px' }}>
+                                            <CCardBody><Bar options={options} data={cdata} /></CCardBody>
+                                        </CCard>
+                                    </CCollapse>
+                                </>}
                         </ExpandedLink>
                     </DataContainer>
                     <ToastContainer

@@ -9,19 +9,18 @@ interface LinkProps {
 }
 
 const Link = ({onClick,linkData, clicked}:LinkProps) => {
-    const [clicks, setClicks] = useState(10);
 
     return (
         <LinkContainer clicked={clicked} onClick = {() => onClick(linkData)} >
             <input type= "checkbox" ></input>
             <LinkDataContainer>
-                <span><small>{linkData.id}</small></span>
-                <span><b>{linkData.shortUrl}</b></span>
+                <span><small>Created {linkData.creationTime.split('T')[0]}</small></span>
+                <span><b>{linkData.name}</b></span>
                 <span>byPs/{linkData.shortUrl}</span>
             </LinkDataContainer>
-            <div style={{display: 'flex', alignItems: 'center', fontSize: '20px'}} onClick = {() => setClicks(clicks+1)}>
+            <div style={{display: 'flex', alignItems: 'center', fontSize: '20px'}}>
                🖱️
-            {clicks}</div>
+            {linkData.totalCount}</div>
         </LinkContainer>
     )
 }
