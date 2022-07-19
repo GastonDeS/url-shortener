@@ -11,5 +11,9 @@ export const ERRORS = {
         GENERAL: { status: 403, internalStatus: 'FORBIDDEN', message: 'Forbidden.' },
         UNAUTHORIZED: { status: 403, internalStatus: 'UNAUTHORIZED', message: 'Company unauthorized.' },
         MISSING_TOKEN: { status: 403, internalStatus: 'MISSING_TOKEN', message: 'No token provided.'},
+    },
+    CONFLICT: {
+        GENERAL: { status: 409, internalStatus: 'CONFLICT', message: 'Conflict.' },
+        URL: { status: 409, internalStatus: 'ALREADY_EXIST_URL', message: 'Already exists url.' },
     }
 }

@@ -1,4 +1,4 @@
-import { BASIC_PLAN_URL_TIME } from "../constants/general.constant";
+import { BASIC_PLAN_URL_TIME, HISTOGRAM_INTERVALS } from "../constants/general.constant";
 import urlModel, { IUrl } from "../models/url.model";
 import RedisService from "./redis.service";
 import {Md5} from "md5-typescript";
@@ -29,6 +29,7 @@ class UrlService {
         return UrlService.instance;
     };
 
+    // reduce userUrl
     addUrl = async (userId: string, name: string, shortUrl: string | undefined, url: string, labels: string[]) => {
         if (!shortUrl) {
             shortUrl = this.genShortUrl(url, userId);
@@ -48,15 +49,29 @@ class UrlService {
         return link;
     }
 
-    getUrlFullData = async (shortUrl: string) => {
-        return await this.clickService.getHistogram(shortUrl);
+    modifyUrl = async (userId: string, urlId: string, name: string, shortUrl: string, labels: string[]) => {
+        const oldUrl = await urlModel.findOneAndUpdate({userId, _id: urlId}, {name, shortUrl, labels});
+        const user = await this.userService.getUserById(userId);
+        if (oldUrl?.shortUrl !== shortUrl && user !== null) {
+            await this.redisService.delFromRedis(oldUrl!.shortUrl);
+            if (user!.type === USER_TYPE.PREMIUM) {
+                await this.redisService.setToRedis(shortUrl, oldUrl!.url);
+            } else {
+                await this.redisService.setExpireKeyToRedis(shortUrl, oldUrl!.url, BASIC_PLAN_URL_TIME);
+            }
+        }
+        return await urlModel.findOne({_id: urlId}, '_id userId name url shortUrl labels clicks');
+    }
+
+    getUrlFullData = async (shortUrl: string, interval: HISTOGRAM_INTERVALS) => {
+        return await this.clickService.getHistogram(shortUrl, interval);
     }
 
     getUrlsFromUserId = async (userId: string, after: Date | undefined) => {
         if (after !== null && isDate(after)) {
-            return await urlModel.find({userId: userId, creationTime: {$gt: after}}, '_id userId name url shortUrl labels creationTime');
+            return await urlModel.find({userId: userId, creationTime: {$gt: after}}, '_id userId name url shortUrl labels creationTime clicks');
         }
-        return await urlModel.find({userId: userId}, '_id userId name url shortUrl labels creationTime');
+        return await urlModel.find({userId: userId}, '_id userId name url shortUrl labels creationTime clicks');
     }
 
     getUrlFromShort = async (shortUrl: string, redis = true) => {
@@ -70,13 +85,20 @@ class UrlService {
             url = link.url; 
         }
         this.clickService.createClick(shortUrl);
+        await urlModel.findOneAndUpdate({shortUrl}, {
+            $inc: {
+              clicks: 1
+            }
+          })
         return url;
     }
 
     renewUrl = async (shortUrl: string) => {
         const link = await urlModel.findOne({shortUrl});
         if (!link) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
+        await urlModel.findOneAndUpdate({shortUrl}, {lastRenew: Date.now});
         await this.redisService.setExpireKeyToRedis(shortUrl, link.url, BASIC_PLAN_URL_TIME);
+        await this.userService.useUrl(link.userId);
         return link;
     }
 

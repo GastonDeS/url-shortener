@@ -24,8 +24,7 @@ class UserService {
     }
 
     updatePlan = async (userId: string) => {
-        await userModel.findOneAndUpdate({_id: userId}, {role: USER_TYPE.PREMIUM});
-        return true;
+        return await userModel.findOneAndUpdate({_id: userId}, {type: USER_TYPE.PREMIUM}, {new: true});
     }
 
     prettyUser = (user: IUser): IPrettyUser => {
@@ -35,6 +34,12 @@ class UserService {
             type: user.type,
             username: user.username
         } as IPrettyUser;
+    }
+
+    useUrl = async (userId: string) => {
+        await userModel.findOneAndUpdate({_id: userId}, {$dec: {
+            urlUsed: 1
+        }});
     }
 
     getUserByEmail = async (email: string) => {

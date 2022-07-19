@@ -23,6 +23,8 @@ export class UrlRoutes {
         this.router.use(cors());
 
         this.router.post('/', userAuthMiddleware, this.controller.createurl);
+        this.router.post('/:urlId', userAuthMiddleware, this.controller.modifyUrl);
+        this.router.post('/renew/:shortUrl', userAuthMiddleware, this.controller.renewUrl);
         this.router.get('/:shortUrl', this.controller.getUrlFromShort);
 
     }

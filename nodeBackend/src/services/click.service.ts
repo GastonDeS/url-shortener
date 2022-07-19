@@ -1,3 +1,5 @@
+import moment from "moment";
+import { HISTOGRAM_INTERVALS } from "../constants/general.constant";
 import ClickModel from "../models/click.model";
 
 class ClickService {
@@ -16,26 +18,68 @@ class ClickService {
         return await ClickModel.create({shortUrl, accessDate: now});
     }
 
-    getHistogram = async (shortUrl: string) => {
-        const histogram = await ClickModel.aggregate([
-            {$match:
-                {'shortUrl': shortUrl}
-            },
-            { 
-                "$group": {
-                    _id: {
-                        $dateTrunc: { 
-                            date:  "$accessDate", unit: "minute"}
-                        }
-                    , count: {$sum:1}
+    getShortUrlClicks = async (shortUrl: string) => {
+        return await ClickModel.count({shortUrl});
+    }
+
+    getHistogram = async (shortUrl: string, interval: HISTOGRAM_INTERVALS ) => {
+        if (interval === HISTOGRAM_INTERVALS.MONTH) {
+            const histogram = await ClickModel.aggregate([
+                {$match:
+                    {'shortUrl': shortUrl}
+                },
+                { 
+                    "$group": {
+                        _id: {
+                            $dateTrunc: { 
+                                date:  "$accessDate", unit: "month"}
+                            }
+                        , count: {$sum:1}
+                    }
                 }
+            , {
+                $sort: {_id: -1}
             }
-        , {
-            $sort: {_id: -1}
-        }
             ]).exec();
-        const totalCount = histogram.map(data => data.count).reduce((count, sum) => count + sum, 0);
-        return {histogram, totalCount};
+            const histogramRes = histogram.map(data => {
+                data.date = moment(data._id).format('YYYY-MM');
+                data.clicks = data.count;
+                data.count = undefined;
+                data._id = undefined;
+                return data;
+            });
+            const totalCount = histogram.map(data => data.clicks).reduce((count, sum) => count + sum, 0);
+            return {histogram: histogramRes, totalCount};
+        } else {
+            const histogram = await ClickModel.aggregate([
+                {$match:
+                    {'shortUrl': shortUrl}
+                },
+                { 
+                    "$group": {
+                        _id: {
+                            $dateTrunc: { 
+                                date:  "$accessDate", unit: "day"}
+                            }
+                        , count: {$sum:1}
+                    }
+                }
+            , {
+                $sort: {_id: -1}
+            }
+            ]).exec();
+            const histogramRes = histogram.map(data => {
+                data.date = moment(data._id).format('MM-DD');
+                data.clicks = data.count;
+                data.count = undefined;
+                data._id = undefined;
+                return data;
+            });
+            const totalCount = histogram.map(data => data.clicks).reduce((count, sum) => count + sum, 0);
+            return {histogram: histogramRes, totalCount};
+        }
+        
+        
     }
 }
 
