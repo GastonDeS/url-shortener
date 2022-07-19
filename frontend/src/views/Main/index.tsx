@@ -142,11 +142,7 @@ const Main = () => {
                         year: "numeric",
                         hour: "numeric",
                         minute: "numeric"
-<<<<<<< Updated upstream
-                    }));
-=======
                       }));
->>>>>>> Stashed changes
                     setLinks(ans.data)
                     setClickedLink(ans.data[0]);
                     let auxTags: string[] = [];
@@ -161,13 +157,7 @@ const Main = () => {
                 });
 
         }
-<<<<<<< Updated upstream
-    }, [logged, newLinkCreated, resetFilters]);
-
-
-=======
-    }, [user, newLinkCreated]);
->>>>>>> Stashed changes
+    }, [user, newLinkCreated, resetFilters]);
 
     useEffect(() => {
         setShow(false);
