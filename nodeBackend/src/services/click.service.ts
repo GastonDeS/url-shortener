@@ -17,7 +17,7 @@ class ClickService {
     }
 
     getHistogram = async (shortUrl: string) => {
-        return await ClickModel.aggregate([
+        const histogram = await ClickModel.aggregate([
             {$match:
                 {'shortUrl': shortUrl}
             },
@@ -34,6 +34,8 @@ class ClickService {
             $sort: {_id: -1}
         }
             ]).exec();
+        const totalCount = histogram.map(data => data.count).reduce((count, sum) => count + sum, 0);
+        return {histogram, totalCount};
     }
 }
 
