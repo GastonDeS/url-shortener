@@ -422,8 +422,10 @@ const Main = () => {
                             {links.length === 0 ?
                                 <>
                                     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '100%' }}>
-                                        <span style={{ alignSelf: 'center', margin: '20px', fontSize: '34px', fontWeight: '500' }}>You don't have any links yet!</span>
-                                        <Button onClick={() => setShowNewLink(true)} style={{ marginTop: '20px' }}>New Link</Button>
+                                        <span style={{ alignSelf: 'center', margin: '20px', fontSize: '34px', fontWeight: '500' }}>
+                                            {filters.length > 0 ? 'We couldn\'t find links matching' : 'You don\'t have any links yet!'}</span>
+                                        <Button onClick={() =>{filters.length > 0 ? setShowFilters(true) : setShowNewLink(true)}} style={{ marginTop: '20px' }}>
+                                        {filters.length > 0 ? 'Filters' : 'New Link'}</Button>
                                     </div>
                                 </> :
                                 <>

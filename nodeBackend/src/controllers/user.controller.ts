@@ -65,7 +65,7 @@ export class UserController {
         try {
             if (!userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
 
-            const urls = await this.urlService.getUrlsFromUserId(userId, startDate, labels.split(','));
+            const urls = await this.urlService.getUrlsFromUserId(userId, startDate, labels?.split(','));
             return res.send(urls);
         } catch (error) {
             next(error);
