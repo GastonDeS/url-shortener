@@ -27,6 +27,22 @@ export class UrlController {
         }
     }
 
+    modifyUrl: RequestHandler = async (req, res, next) => {
+        const userId = req.user.id;
+        const shortUrl = req.body.shortUrl;
+        const name = req.body.name;
+        const urlId = req.params.urlId;
+        const labels = req.body.labels;
+
+        try {
+            const link = await this.urlService.modifyUrl(userId, urlId, name, shortUrl, labels);
+            return res.status(201).send({link});
+        } catch (error) {
+            if (error instanceof GenericException) next(error)
+            next(new GenericException(ERRORS.CONFLICT.URL));
+        }
+    }
+
     getUrlFromShort: RequestHandler = async (req, res, next) => {
         const shortUrl = req.params.shortUrl;
 

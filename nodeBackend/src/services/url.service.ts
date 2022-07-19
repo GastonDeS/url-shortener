@@ -29,6 +29,7 @@ class UrlService {
         return UrlService.instance;
     };
 
+    // reduce userUrl
     addUrl = async (userId: string, name: string, shortUrl: string | undefined, url: string, labels: string[]) => {
         if (!shortUrl) {
             shortUrl = this.genShortUrl(url, userId);
@@ -46,6 +47,20 @@ class UrlService {
         prettyLink.updatedAt = undefined;
         prettyLink.__v = undefined;
         return link;
+    }
+
+    modifyUrl = async (userId: string, urlId: string, name: string, shortUrl: string, labels: string[]) => {
+        const oldUrl = await urlModel.findOneAndUpdate({userId, _id: urlId}, {name, shortUrl, labels});
+        const user = await this.userService.getUserById(userId);
+        if (oldUrl?.shortUrl !== shortUrl && user !== null) {
+            await this.redisService.delFromRedis(oldUrl!.shortUrl);
+            if (user!.type === USER_TYPE.PREMIUM) {
+                await this.redisService.setToRedis(shortUrl, oldUrl!.url);
+            } else {
+                await this.redisService.setExpireKeyToRedis(shortUrl, oldUrl!.url, BASIC_PLAN_URL_TIME);
+            }
+        }
+        return await urlModel.findOne({_id: urlId}, '_id userId name url shortUrl labels clicks');
     }
 
     getUrlFullData = async (shortUrl: string, interval: HISTOGRAM_INTERVALS) => {
