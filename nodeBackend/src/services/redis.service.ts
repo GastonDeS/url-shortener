@@ -74,7 +74,7 @@ class RedisService {
     delFromRedis = async (key: string) => await this.deleteKey(key);
 
     isConnected = async (): Promise<boolean> => {
-        return await this.redisClient.ping();
+        return this.redisClient.ping();
     };
 }
 

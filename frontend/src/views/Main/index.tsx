@@ -323,7 +323,6 @@ const Main = () => {
     }
 
     const modifyFilters = (filters: string[]) => {
-        console.log(filters);
         setFilters(filters);
     }
 
@@ -335,7 +334,16 @@ const Main = () => {
             if (dateRef.current && dateRef.current.value !== "")
                 params['after'] = dateRef.current.value;
             axiosService.authAxiosWrapper(methods.GET, `/v1/users/${user?.userId}/links`, { params: params }, {})
-                .then((res: AxiosResponse<any, LinkData[]>) => setLinks(res.data));
+                .then((res: AxiosResponse<any, LinkData[]>) => {
+                   res.data.forEach((el: LinkData) => el.creationTime = new Date(el.creationTime).toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "numeric"
+                    }));
+                    setLinks(res.data)
+                });
         }
         else
             setFetchLinks(true);
@@ -411,16 +419,18 @@ const Main = () => {
                             </CustomSelectContainer>
                             <CustomSelectContainer>
                                 <span>Since</span>
-                                {dateRef.current && dateRef.current.value !== "" && <a href="#" style={{ width: 'fit-content', color: 'grey', padding: '0' }} onClick={() => {
-                                    if (dateRef.current) {
-                                        dateRef.current.value = "";
-                                        setFilterDate("");
-                                    }
-                                }}>Clean</a>}
+                                {dateRef.current && dateRef.current.value !== "" &&
+                                    <a href="#" style={{ width: 'fit-content', color: 'grey', padding: '0' }}
+                                        onClick={() => {
+                                            if (dateRef.current) {
+                                                dateRef.current.value = "";
+                                                setFilterDate("");
+                                            }
+                                        }}>Clean</a>}
                                 <CustomInput ref={dateRef} type="text" placeholder='YYYY-MM-DD' style={{ maxHeight: '38px' }} defaultValue={filterDate}
                                     onChange={(e) => setFilterDate(e.target.value)}></CustomInput>
                             </CustomSelectContainer>
-                            
+
                             <Button primary onClick={() => { setShowFilters(false); applyFilters() }}>Apply</Button>
                         </SelectsContainer>
                     </ReactModal>
