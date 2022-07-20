@@ -168,10 +168,18 @@ const Main = () => {
     }, [clickedLink])
 
     const createNewLink = (newLinkData: NewLinkData) => {
+        if(newLinkData.shortUrl === "" || newLinkData.url === ""){
+            emitErrorToast("Short or Long link missing!")
+            return;
+        }
         axiosService.authAxiosWrapper(methods.POST, `/v1/urls`, {}, newLinkData)
             .then(res => {
                 setNewLinkCreated(true);
                 setShowNewLink(false);
+            })
+            .catch(res => {
+                console.log(res);
+                emitErrorToast('Short Link is already taken!');
             })
     };
 
@@ -233,7 +241,7 @@ const Main = () => {
                 });
     }
 
-    const emitToast = () => {
+    const emitCopyToast = () => {
         toast('\u2705 Copied to clipboard!', {
             autoClose: 1000,
             hideProgressBar: true,
@@ -241,8 +249,22 @@ const Main = () => {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
+            position: 'bottom-center'
         });
     }
+    const emitErrorToast = (message:string) => {
+        toast.error(message, {
+            toastId:2,
+            autoClose: 1500,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: false,
+            progress: undefined,
+            position: 'top-right'
+        });
+    }
+
 
     const handleUpgradePremium = () => {
         userService.updatePlan(user!.userId)
@@ -443,7 +465,7 @@ const Main = () => {
                                             byPs/{clickedLink?.shortUrl}
                                         </LinkText>
                                         <LinkButtons>
-                                            <Button primary onClick={(e) => { navigator.clipboard.writeText(clickedLink?.shortUrl ? `https://byps-gbn.herokuapp.com/v1/urls/${clickedLink.shortUrl}` : ''); emitToast() }}>Copy</Button>
+                                            <Button primary onClick={(e) => { navigator.clipboard.writeText(clickedLink?.shortUrl ? `https://byps-gbn.herokuapp.com/v1/urls/${clickedLink.shortUrl}` : ''); emitCopyToast() }}>Copy</Button>
                                             <Button onClick={() => setShowQR(true)}>QR Code</Button>
                                         </LinkButtons>
                                     </LinkDiv>
@@ -475,7 +497,6 @@ const Main = () => {
                         </ExpandedLink>
                     </DataContainer>
                     <ToastContainer
-                        position="bottom-center"
                         autoClose={1000}
                         hideProgressBar={false}
                         newestOnTop={false}
