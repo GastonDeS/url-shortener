@@ -111,9 +111,13 @@ class UrlService {
         const user = await this.userService.getUserById(link.userId);
         if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
         if (user.type === USER_TYPE.BASIC && user.urlUsed > 5) throw new GenericException(ERRORS.CONFLICT.URL_LIMIT);
-        await urlModel.findOneAndUpdate({ shortUrl }, { lastRenew: Date.now });
-        await this.redisService.setExpireKeyToRedis(shortUrl, link.url, BASIC_PLAN_URL_TIME);
-        await this.userService.useUrl(link.userId);
+        if (user.type === USER_TYPE.PREMIUM) {
+            await this.redisService.setToRedis(shortUrl, link.url);
+        } else {
+            await urlModel.findOneAndUpdate({ shortUrl }, { lastRenew: Date.now });
+            await this.redisService.setExpireKeyToRedis(shortUrl, link.url, BASIC_PLAN_URL_TIME);
+            await this.userService.useUrl(link.userId);
+        }
         return link;
     }
 
