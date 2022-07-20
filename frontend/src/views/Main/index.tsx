@@ -30,7 +30,7 @@ import { useEffect, useRef, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { axiosService } from '../../services'
+import { axiosService, linkService } from '../../services'
 import { methods } from '../../assets/constants'
 import axios, { AxiosResponse } from 'axios'
 import { userService } from '../../services'
@@ -51,6 +51,7 @@ interface ApiChartData {
     totalCount: number;
 
 }
+
 export interface NewLinkData {
     userId: string,
     url: string,
@@ -75,7 +76,6 @@ const Main = () => {
     const token = localStorage.getItem("token");
     let navigate = useNavigate();
     const [show, setShow] = useState<boolean>(false);
-    const [logged, setLogged] = useState<boolean>(false);
     const [showFilters, setShowFilters] = useState<boolean>(false);
     const [showQR, setShowQR] = useState<boolean>(false);
     const [showEditLink, setShowEditLink] = useState<boolean>(false);
@@ -103,7 +103,6 @@ const Main = () => {
                 user: JSON.parse(currUser)
             }
             login(newUser)
-            setLogged(true);
         } else {
             navigate('/login')
         }
@@ -131,8 +130,7 @@ const Main = () => {
     }
 
     useEffect(() => {
-        if (logged) {
-            const user = JSON.parse(currUser ? currUser : "");
+        if (user) {
             axiosService.authAxiosWrapper<LinkData[]>(methods.GET, `/v1/users/${user.userId}/links`, {}, {})
                 .then((ans: AxiosResponse<any, LinkData[]>) => {
                     setNewLinkCreated(false);
@@ -144,7 +142,7 @@ const Main = () => {
                         year: "numeric",
                         hour: "numeric",
                         minute: "numeric"
-                    }));
+                      }));
                     setLinks(ans.data)
                     setClickedLink(ans.data[0]);
                     let auxTags: string[] = [];
@@ -159,9 +157,7 @@ const Main = () => {
                 });
 
         }
-    }, [logged, newLinkCreated, resetFilters]);
-
-
+    }, [user, newLinkCreated, resetFilters]);
 
     useEffect(() => {
         setShow(false);
@@ -176,12 +172,32 @@ const Main = () => {
             .then(res => {
                 setNewLinkCreated(true);
                 setShowNewLink(false);
+                reset();
             })
             .catch(res => {
                 console.log(res);
                 emitErrorToast('Short Link is already taken!');
             })
     };
+
+    const editLink = (newLinkData: NewLinkData) => {
+        const formData = {
+            userId: user!.userId,
+            shortUrl: newLinkData.shortUrl,
+            name: newLinkData.name,
+            urlId: clickedLink!.id,
+            labels: newLinkData.labels
+        }
+        reset();
+        linkService.editLink(formData)
+            .then(res => {
+                if (res.hasFailed()) {
+                    handleFailure(res.getStatus(), navigate);
+                } else  {
+                    setShowEditLink(false);
+                }
+            });
+    }
 
     ChartJS.register(
         CategoryScale,
@@ -309,7 +325,7 @@ const Main = () => {
                         <Button primary onClick={() => setShowFilters(!showFilters)}>Filters</Button>
                         <Button onClick={() => setShowNewLink(true)}>New link</Button>
                     </FilterContainer>
-                    <ReactModal isOpen={showNewLink} style={rightModalStyle}>
+                    <ReactModal isOpen={showNewLink} style={rightModalStyle} ariaHideApp={false}>
                         <ModalTitleContainer style={{ backgroundColor: "#D67097", margin: '0', padding: '7px 4px', height: '70px' }}>
                             <ModalTitle>New Link</ModalTitle>
                             <Button primary onClick={() => setShowNewLink(false)}>&#10005;</Button>
@@ -386,14 +402,14 @@ const Main = () => {
                             <ModalTitle>Edit Link</ModalTitle>
                             <Button primary onClick={() => setShowEditLink(false)}>&#10005;</Button>
                         </ModalTitleContainer>
-                        <div style={{ display: 'flex', flexDirection: 'column', margin: '15px' }}>
+                        <form style={{ display: 'flex', flexDirection: 'column', margin: '15px' }} onSubmit={handleSubmit(editLink)}>
                             <EditLinkContainer>
                                 <InputTitle>Edit Link Title</InputTitle>
-                                <CustomInput type={"text"} defaultValue={clickedLink?.shortUrl}></CustomInput>
+                                <CustomInput {...register("name")} type={"text"} defaultValue={clickedLink?.name}></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Edit Link</InputTitle>
-                                <CustomInput type={"text"} defaultValue={clickedLink?.shortUrl}></CustomInput>
+                                <CustomInput {...register("shortUrl")}type={"text"} defaultValue={clickedLink?.shortUrl}></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Tags</InputTitle>
@@ -408,8 +424,8 @@ const Main = () => {
                                 </TagsContainer>
                             </EditLinkContainer>
                             <hr style={{ margin: '3px 0 20px 0' }} />
-                            <Button style={{ width: '100%', margin: '0' }} onClick={() => setShowEditLink(false)}> Save </Button>
-                        </div>
+                            <Button style={{ width: '100%', margin: '0' }} type="submit"> Save </Button>
+                        </form>
                     </ReactModal>
                     <ReactModal isOpen={upgradePremium} style={modalStyle} ariaHideApp={false}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
