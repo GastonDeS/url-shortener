@@ -56,7 +56,7 @@ class UrlService {
         if (!oldUrl) throw new GenericException(ERRORS.NOT_FOUND.URL);
         const user = await this.userService.getUserById(userId);
         if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
-        if (userId !== oldUrl.userId) throw new GenericException(ERRORS.FORBIDDEN.UNAUTHORIZED);
+        if (userId.toString() !== oldUrl.userId.toString()) throw new GenericException(ERRORS.FORBIDDEN.UNAUTHORIZED);
         if (user.type === USER_TYPE.BASIC && user.urlUsed > 5) throw new GenericException(ERRORS.CONFLICT.URL_LIMIT);
 
         if (oldUrl.shortUrl !== shortUrl && user !== null) {
@@ -107,7 +107,7 @@ class UrlService {
     renewUrl = async (shortUrl: string, userId: string) => {
         const link = await urlModel.findOne({ shortUrl });
         if (!link) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
-        if (link.userId !== userId) throw new GenericException(ERRORS.FORBIDDEN.UNAUTHORIZED);
+        if (link.userId.toString() !== userId.toString()) throw new GenericException(ERRORS.FORBIDDEN.UNAUTHORIZED);
         const user = await this.userService.getUserById(link.userId);
         if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
         if (user.type === USER_TYPE.BASIC && user.urlUsed > 5) throw new GenericException(ERRORS.CONFLICT.URL_LIMIT);

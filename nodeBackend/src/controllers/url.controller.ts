@@ -65,10 +65,10 @@ export class UrlController {
         try {
             if (!shortUrl || !userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
 
-            this.urlService.renewUrl(shortUrl, userId);
+            await this.urlService.renewUrl(shortUrl, userId);
             return res.status(202).send();
         } catch (error) {
-            next(new GenericException(ERRORS.NOT_FOUND.GENERAL));
+            next(error);
         }
     }
 }
