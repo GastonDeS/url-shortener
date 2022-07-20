@@ -52,16 +52,19 @@ interface ApiChartData {
 
 }
 
-export interface NewLinkData {
-    userId: string,
-    url: string,
+export interface EditLinkData {
     shortUrl: string,
     name: string,
     labels: string[]
+}
+
+export interface NewLinkData extends EditLinkData {
+    userId: string,
+    url: string,
 };
 
 export interface LinkData extends NewLinkData {
-    id: string,
+    _id: string,
     creationTime: string,
     updatedAt: string,
     totalCount: number,
@@ -94,7 +97,7 @@ const Main = () => {
     const [newLinkTags, setNewLinkTags] = useState<string[]>([]);
     const [allTags, setAllTags] = useState<string[]>([]);
     const [filters, setFilters] = useState<string[]>([]);
-    const [resetFilters, setResetFilters] = useState<boolean>(false)
+    const [fetchLinks, setFetchLinks] = useState<boolean>(false)
 
     useEffect(() => {
         if (currUser && currUser !== "") {
@@ -114,19 +117,32 @@ const Main = () => {
             setTags(link.labels);
     }
 
-    const addNewTag = (value: string) => {
+    const addNewTag = (value: string, newLink: boolean) => {
         if (!tags.includes(value)) {
-            setNewLinkTags(newLinkTags => [...newLinkTags, value]);
-            setValue("labels", [...newLinkTags, value])
+            if (newLink){
+                setNewLinkTags(newLinkTags => [...newLinkTags, value]);
+                setValue("labels", [...newLinkTags, value])
+            }
+            else{
+                setTags(tags => [...tags, value]);
+                setValue("labels", [...tags, value])
+            }
         }
         if (tagInputRef.current?.value)
             tagInputRef.current.value = "";
 
     }
 
-    const removeTag = (value: string) => {
-        setNewLinkTags(newLinkTags.filter(t => t !== value));
-        setValue("labels", newLinkTags.filter(t => t !== value));
+    const removeTag = (value: string, newLink: boolean) => {
+        if (newLink) {
+            setNewLinkTags(newLinkTags.filter(t => t !== value));
+            setValue("labels", newLinkTags.filter(t => t !== value));
+        }
+        else
+        {
+            setTags(tags.filter(t => t !== value));
+            setValue("labels", tags.filter(t => t !== value));
+        }
     }
 
     useEffect(() => {
@@ -142,9 +158,11 @@ const Main = () => {
                         year: "numeric",
                         hour: "numeric",
                         minute: "numeric"
-                      }));
+                    }));
                     setLinks(ans.data)
                     setClickedLink(ans.data[0]);
+                    setFetchLinks(false);
+                    setTags(ans.data[0].labels)
                     let auxTags: string[] = [];
                     ans.data.forEach((el: LinkData) => {
                         el.labels.forEach(label => {
@@ -153,18 +171,17 @@ const Main = () => {
                         })
                     });
                     setAllTags(auxTags);
-                    setResetFilters(false);
                 });
 
         }
-    }, [user, newLinkCreated, resetFilters]);
+    }, [user, newLinkCreated, fetchLinks]);
 
     useEffect(() => {
         setShow(false);
     }, [clickedLink])
 
     const createNewLink = (newLinkData: NewLinkData) => {
-        if(newLinkData.shortUrl === "" || newLinkData.url === ""){
+        if (newLinkData.shortUrl === "" || newLinkData.url === "") {
             emitErrorToast("Short or Long link missing!")
             return;
         }
@@ -182,21 +199,22 @@ const Main = () => {
 
     const editLink = (newLinkData: NewLinkData) => {
         const formData = {
-            userId: user!.userId,
             shortUrl: newLinkData.shortUrl,
             name: newLinkData.name,
-            urlId: clickedLink!.id,
             labels: newLinkData.labels
         }
         reset();
-        linkService.editLink(formData)
-            .then(res => {
-                if (res.hasFailed()) {
-                    handleFailure(res.getStatus(), navigate);
-                } else  {
-                    setShowEditLink(false);
-                }
-            });
+        if (clickedLink) {
+            linkService.editLink(formData, clickedLink._id)
+                .then(res => {
+                    if (res.hasFailed()) {
+                        handleFailure(res.getStatus(), navigate);
+                    } else {
+                        setShowEditLink(false);
+                        setFetchLinks(true);
+                    }
+                });
+        }
     }
 
     ChartJS.register(
@@ -254,7 +272,7 @@ const Main = () => {
                 //     return group;
                 setChartData(res.data.histogram.map((v: HistogramData) => v.clicks));
                 setLabels(res.data.histogram.map((e: HistogramData) => e.date));
-                });
+            });
     }
 
     const emitCopyToast = () => {
@@ -268,9 +286,9 @@ const Main = () => {
             position: 'bottom-center'
         });
     }
-    const emitErrorToast = (message:string) => {
+    const emitErrorToast = (message: string) => {
         toast.error(message, {
-            toastId:2,
+            toastId: 2,
             autoClose: 1500,
             hideProgressBar: true,
             closeOnClick: true,
@@ -295,20 +313,22 @@ const Main = () => {
             })
     }
 
-   const modifyFilters = (filters:string[]) => {
+    const modifyFilters = (filters: string[]) => {
         console.log(filters);
         setFilters(filters);
-   }
+    }
 
-   const applyFilters = () => {
-        if(filters.length > 0) 
-            axiosService.authAxiosWrapper(methods.GET, `/v1/users/${user?.userId}/links`, {params: {
-                labels: filters.join(',')
-            }}, {})
-            .then((res: AxiosResponse<any, LinkData[]>) => setLinks(res.data));
+    const applyFilters = () => {
+        if (filters.length > 0)
+            axiosService.authAxiosWrapper(methods.GET, `/v1/users/${user?.userId}/links`, {
+                params: {
+                    labels: filters.join(',')
+                }
+            }, {})
+                .then((res: AxiosResponse<any, LinkData[]>) => setLinks(res.data));
         else
-            setResetFilters(true);
-   }
+            setFetchLinks(true);
+    }
 
     return (
         <Page>
@@ -347,12 +367,12 @@ const Main = () => {
                                 <InputTitle>Tags</InputTitle>
                                 <div style={{ display: 'flex', width: '100%' }}>
                                     <CustomInput ref={tagInputRef} style={{ borderRadius: '22px', marginRight: '10px', width: '75%' }} placeholder="Create new tags" type={"text"} />
-                                    <Button type='button' onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value)}>&#43;</Button>
+                                    <Button type='button' onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value, true)}>&#43;</Button>
                                 </div>
                                 <TagsContainer>
                                     {newLinkTags.map((tag, idx) => {
                                         return (
-                                            <Pill key={idx}>{tag}<PillButton type='button' onClick={() => { removeTag(tag); }}>&#10005;</PillButton></Pill>
+                                            <Pill key={idx}>{tag}<PillButton type='button' onClick={() => { removeTag(tag, true); }}>&#10005;</PillButton></Pill>
                                         );
                                     })}
                                 </TagsContainer>
@@ -362,28 +382,28 @@ const Main = () => {
                         </form>
                     </ReactModal>
                     <ReactModal isOpen={showFilters} shouldCloseOnOverlayClick={true} shouldCloseOnEsc={true} style={modalStyle} ariaHideApp={false}>
-                            <ModalTitleContainer>
-                                <ModalTitle>Filters</ModalTitle>
-                                <Button onClick={() => setShowFilters(false)}>&#10005;</Button>
-                            </ModalTitleContainer>
-                            <SelectsContainer>
-                                <CustomSelectContainer>
-                                    <span>Tags</span>
-                                    <Select
-                                        onChange={(options) => modifyFilters(options.map(o => o.value))}
-                                        closeMenuOnSelect={false}
-                                        isMulti
-                                        options={allTags ? createOptions(allTags) : []}
-                                        value={createOptions(filters)}
-                                        styles={TagSelectStyle}
-                                    />
-                                </CustomSelectContainer>
-                                <CustomSelectContainer>
-                                    <span>Since</span>
-                                    <Select options={[{ value: 'date', label: "12/12/12" }, { value: 'date2', label: "13/12/12" }]} styles={DateSelectStyle} />
-                                </CustomSelectContainer>
-                                <Button primary onClick={() => {setShowFilters(false);applyFilters()}}>Apply</Button>
-                            </SelectsContainer>
+                        <ModalTitleContainer>
+                            <ModalTitle>Filters</ModalTitle>
+                            <Button onClick={() => setShowFilters(false)}>&#10005;</Button>
+                        </ModalTitleContainer>
+                        <SelectsContainer>
+                            <CustomSelectContainer>
+                                <span>Tags</span>
+                                <Select
+                                    onChange={(options) => modifyFilters(options.map(o => o.value))}
+                                    closeMenuOnSelect={false}
+                                    isMulti
+                                    options={allTags ? createOptions(allTags) : []}
+                                    value={createOptions(filters)}
+                                    styles={TagSelectStyle}
+                                />
+                            </CustomSelectContainer>
+                            <CustomSelectContainer>
+                                <span>Since</span>
+                                <Select options={[{ value: 'date', label: "12/12/12" }, { value: 'date2', label: "13/12/12" }]} styles={DateSelectStyle} />
+                            </CustomSelectContainer>
+                            <Button primary onClick={() => { setShowFilters(false); applyFilters() }}>Apply</Button>
+                        </SelectsContainer>
                     </ReactModal>
                     <ReactModal isOpen={showQR} style={modalStyle} ariaHideApp={false}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -409,17 +429,17 @@ const Main = () => {
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Edit Link</InputTitle>
-                                <CustomInput {...register("shortUrl")}type={"text"} defaultValue={clickedLink?.shortUrl}></CustomInput>
+                                <CustomInput {...register("shortUrl")} type={"text"} defaultValue={clickedLink?.shortUrl}></CustomInput>
                             </EditLinkContainer>
                             <EditLinkContainer>
                                 <InputTitle>Tags</InputTitle>
                                 <div style={{ display: 'flex', width: '100%' }}>
                                     <CustomInput ref={tagInputRef} style={{ borderRadius: '22px', marginRight: '10px', width: '75%' }} placeholder="Create new tags" type={"text"} />
-                                    <Button onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value)}>&#43;</Button>
+                                    <Button type="button" onClick={() => tagInputRef.current?.value && addNewTag(tagInputRef.current?.value, false)}>&#43;</Button>
                                 </div>
                                 <TagsContainer>
                                     {tags.map((tag, idx) => {
-                                        return (<Pill key={idx}>{tag}<PillButton onClick={() => removeTag(tag)}>&#10005;</PillButton></Pill>);
+                                        return (<Pill key={idx}>{tag}<PillButton type='button' onClick={() => removeTag(tag, false)}>&#10005;</PillButton></Pill>);
                                     })}
                                 </TagsContainer>
                             </EditLinkContainer>
@@ -462,8 +482,8 @@ const Main = () => {
                                     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '100%' }}>
                                         <span style={{ alignSelf: 'center', margin: '20px', fontSize: '34px', fontWeight: '500' }}>
                                             {filters.length > 0 ? 'We couldn\'t find links matching' : 'You don\'t have any links yet!'}</span>
-                                        <Button onClick={() =>{filters.length > 0 ? setShowFilters(true) : setShowNewLink(true)}} style={{ marginTop: '20px' }}>
-                                        {filters.length > 0 ? 'Filters' : 'New Link'}</Button>
+                                        <Button onClick={() => { filters.length > 0 ? setShowFilters(true) : setShowNewLink(true) }} style={{ marginTop: '20px' }}>
+                                            {filters.length > 0 ? 'Filters' : 'New Link'}</Button>
                                     </div>
                                 </> :
                                 <>
