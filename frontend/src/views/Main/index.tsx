@@ -37,7 +37,7 @@ import { userService } from '../../services'
 import { handleFailure } from '../../handlers/errorHandler'
 import { array, element, string } from 'prop-types'
 import { useForm } from 'react-hook-form'
-import { createOptions, TagOptions } from './SelectData/data'
+import { createOptions, Options } from './SelectData/data'
 
 
 
@@ -97,7 +97,10 @@ const Main = () => {
     const [newLinkTags, setNewLinkTags] = useState<string[]>([]);
     const [allTags, setAllTags] = useState<string[]>([]);
     const [filters, setFilters] = useState<string[]>([]);
-    const [fetchLinks, setFetchLinks] = useState<boolean>(false)
+    const [fetchLinks, setFetchLinks] = useState<boolean>(false);
+    const [histogramInterval, setHistogramInterval] = useState<string | undefined>('D');
+    const [filterDate, setFilterDate] = useState<string>("");
+    const dateRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (currUser && currUser !== "") {
@@ -119,11 +122,11 @@ const Main = () => {
 
     const addNewTag = (value: string, newLink: boolean) => {
         if (!tags.includes(value)) {
-            if (newLink){
+            if (newLink) {
                 setNewLinkTags(newLinkTags => [...newLinkTags, value]);
                 setValue("labels", [...newLinkTags, value])
             }
-            else{
+            else {
                 setTags(tags => [...tags, value]);
                 setValue("labels", [...tags, value])
             }
@@ -138,8 +141,7 @@ const Main = () => {
             setNewLinkTags(newLinkTags.filter(t => t !== value));
             setValue("labels", newLinkTags.filter(t => t !== value));
         }
-        else
-        {
+        else {
             setTags(tags.filter(t => t !== value));
             setValue("labels", tags.filter(t => t !== value));
         }
@@ -234,7 +236,7 @@ const Main = () => {
             },
             title: {
                 display: true,
-                text: 'Clicks per Date',
+                text: `Clicks per ${histogramInterval === 'D' ? 'day' : 'month'}`,
                 font: {
                     size: 30,
                 }
@@ -254,7 +256,12 @@ const Main = () => {
 
 
     const getChartData = () => {
-        axiosService.authAxiosWrapper(methods.GET, `/v1/users/link/${clickedLink?.shortUrl}`, {}, {})
+        axiosService.authAxiosWrapper(methods.GET, `/v1/users/link/${clickedLink?.shortUrl}`,
+            {
+                params: {
+                    interval: histogramInterval
+                }
+            }, {})
             .then((res: AxiosResponse<any, ApiChartData[]>) => {
                 // const filteredData: HistogramData[] = res.data.histogram.reduce((group: HistogramData[], elem: HistogramData) => {
                 //     const date: string = elem.date
@@ -274,6 +281,8 @@ const Main = () => {
                 setLabels(res.data.histogram.map((e: HistogramData) => e.date));
             });
     }
+
+    useEffect(getChartData, [histogramInterval]);
 
     const emitCopyToast = () => {
         toast('\u2705 Copied to clipboard!', {
@@ -319,13 +328,15 @@ const Main = () => {
     }
 
     const applyFilters = () => {
-        if (filters.length > 0)
-            axiosService.authAxiosWrapper(methods.GET, `/v1/users/${user?.userId}/links`, {
-                params: {
-                    labels: filters.join(',')
-                }
-            }, {})
+        const params: any = {}
+        if (filters.length > 0 || dateRef.current?.value.length !== 0) {
+            if (filters.length > 0)
+                params['labels'] = filters.join(',');
+            if (dateRef.current && dateRef.current.value !== "")
+                params['after'] = dateRef.current.value;
+            axiosService.authAxiosWrapper(methods.GET, `/v1/users/${user?.userId}/links`, { params: params }, {})
                 .then((res: AxiosResponse<any, LinkData[]>) => setLinks(res.data));
+        }
         else
             setFetchLinks(true);
     }
@@ -400,8 +411,16 @@ const Main = () => {
                             </CustomSelectContainer>
                             <CustomSelectContainer>
                                 <span>Since</span>
-                                <Select options={[{ value: 'date', label: "12/12/12" }, { value: 'date2', label: "13/12/12" }]} styles={DateSelectStyle} />
+                                {dateRef.current && dateRef.current.value !== "" && <a href="#" style={{ width: 'fit-content', color: 'grey', padding: '0' }} onClick={() => {
+                                    if (dateRef.current) {
+                                        dateRef.current.value = "";
+                                        setFilterDate("");
+                                    }
+                                }}>Clean</a>}
+                                <CustomInput ref={dateRef} type="text" placeholder='YYYY-MM-DD' style={{ maxHeight: '38px' }} defaultValue={filterDate}
+                                    onChange={(e) => setFilterDate(e.target.value)}></CustomInput>
                             </CustomSelectContainer>
+                            
                             <Button primary onClick={() => { setShowFilters(false); applyFilters() }}>Apply</Button>
                         </SelectsContainer>
                     </ReactModal>
@@ -526,7 +545,13 @@ const Main = () => {
                                     </div>
                                     <CCollapse style={{ width: '55rem' }} visible={show} >
                                         <CCard style={{ background: 'transparent', margin: '10px' }}>
-                                            <CCardBody><Bar options={options} data={cdata} /></CCardBody>
+                                            <CCardBody>
+                                                <div style={{ width: '200px' }}>
+                                                    <Select options={[{ value: 'D', label: "Day" }, { value: 'M', label: "Month" }]} styles={DateSelectStyle}
+                                                        onChange={(options) => setHistogramInterval(options?.value)} />
+                                                </div>
+                                                <Bar options={options} data={cdata} />
+                                            </CCardBody>
                                         </CCard>
                                     </CCollapse>
                                 </>}

@@ -1,8 +1,8 @@
 import chroma from "chroma-js";
 import { StylesConfig } from "react-select";
-import { TagOptions } from "./data";
+import { Options } from "./data";
 
-export const TagSelectStyle: StylesConfig<TagOptions, true> = {
+export const TagSelectStyle: StylesConfig<Options, true> = {
     control: (styles, state) => ({
         ...styles,
         backgroundColor: 'white',
@@ -67,9 +67,10 @@ export const TagSelectStyle: StylesConfig<TagOptions, true> = {
     }),
 };
 
-export const DateSelectStyle: StylesConfig = {
+export const DateSelectStyle: StylesConfig<Options, false> = {
     control: (styles, state) => ({
         ...styles,
+        width: '200px',
         backgroundColor: 'white',
         border: state.isFocused ? '2px solid #D67097' : '2px solid hsl(0, 0%, 80%)',
         boxShadow: state.isFocused ? '0 0 0 1px #D67097' : undefined,
@@ -89,6 +90,7 @@ export const DateSelectStyle: StylesConfig = {
     option: (styles, { isDisabled, isSelected, isFocused }) => {
         return {
             ...styles,
+            width: '200px',
             backgroundColor:isSelected
                     ? chroma('#D67097').alpha(0.4).css()
                     : isFocused
