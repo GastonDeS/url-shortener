@@ -76,6 +76,9 @@ class UrlService {
     }
 
     getUrlsFromUserId = async (userId: string, after: Date | undefined, tags: string[] | undefined) => {
+        if (tags && after !== null && isDate(after)) {
+            return await urlModel.find({ userId: userId, labels: { $all: tags }, creationTime: { $gt: after } }, '_id userId name url shortUrl labels creationTime clicks');
+        }
         if(tags) {
             return await urlModel.find({ userId: userId, labels: { $all: tags } }, '_id userId name url shortUrl labels creationTime clicks');
         }
