@@ -4,5 +4,6 @@ export interface IPrettyUser {
     userId: string,
     username: string,
     email: string,
-    type: USER_TYPE
+    type: USER_TYPE,
+    urlUsed: number
 }

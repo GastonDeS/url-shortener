@@ -36,6 +36,7 @@ class UrlService {
         }
         const user = await this.userService.getUserById(userId);
         if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
+        if (user.type === USER_TYPE.BASIC && user.urlUsed > 5) throw new GenericException(ERRORS.CONFLICT.URL_LIMIT);
 
         const link = await urlModel.create({ userId, name, shortUrl, url, labels });
         if (user.type === USER_TYPE.PREMIUM) {
@@ -43,6 +44,7 @@ class UrlService {
         } else {
             await this.redisService.setExpireKeyToRedis(shortUrl, url, BASIC_PLAN_URL_TIME);
         }
+        await this.userService.useUrl(userId);
         const prettyLink: any = link;
         prettyLink.updatedAt = undefined;
         prettyLink.__v = undefined;
@@ -51,15 +53,21 @@ class UrlService {
 
     modifyUrl = async (userId: string, urlId: string, name: string, shortUrl: string, labels: string[]) => {
         const oldUrl = await urlModel.findOneAndUpdate({ userId, _id: urlId }, { name, shortUrl, labels });
+        if (!oldUrl) throw new GenericException(ERRORS.NOT_FOUND.URL);
         const user = await this.userService.getUserById(userId);
-        if (oldUrl?.shortUrl !== shortUrl && user !== null) {
+        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
+        if (userId !== oldUrl.userId) throw new GenericException(ERRORS.FORBIDDEN.UNAUTHORIZED);
+        if (user.type === USER_TYPE.BASIC && user.urlUsed > 5) throw new GenericException(ERRORS.CONFLICT.URL_LIMIT);
+
+        if (oldUrl.shortUrl !== shortUrl && user !== null) {
             await this.redisService.delFromRedis(oldUrl!.shortUrl);
             if (user!.type === USER_TYPE.PREMIUM) {
-                await this.redisService.setToRedis(shortUrl, oldUrl!.url);
+                await this.redisService.setToRedis(shortUrl, oldUrl.url);
             } else {
-                await this.redisService.setExpireKeyToRedis(shortUrl, oldUrl!.url, BASIC_PLAN_URL_TIME);
+                await this.redisService.setExpireKeyToRedis(shortUrl, oldUrl.url, BASIC_PLAN_URL_TIME);
             }
         }
+        await this.userService.useUrl(userId);
         return await urlModel.findOne({ _id: urlId }, '_id userId name url shortUrl labels clicks');
     }
 
@@ -96,9 +104,13 @@ class UrlService {
         return url;
     }
 
-    renewUrl = async (shortUrl: string) => {
+    renewUrl = async (shortUrl: string, userId: string) => {
         const link = await urlModel.findOne({ shortUrl });
         if (!link) throw new GenericException(ERRORS.NOT_FOUND.GENERAL);
+        if (link.userId !== userId) throw new GenericException(ERRORS.FORBIDDEN.UNAUTHORIZED);
+        const user = await this.userService.getUserById(link.userId);
+        if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
+        if (user.type === USER_TYPE.BASIC && user.urlUsed > 5) throw new GenericException(ERRORS.CONFLICT.URL_LIMIT);
         await urlModel.findOneAndUpdate({ shortUrl }, { lastRenew: Date.now });
         await this.redisService.setExpireKeyToRedis(shortUrl, link.url, BASIC_PLAN_URL_TIME);
         await this.userService.useUrl(link.userId);

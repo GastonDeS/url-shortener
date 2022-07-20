@@ -22,7 +22,8 @@ export class UrlController {
             const link = await this.urlService.addUrl(userId, name, shortUrl, url, labels);
             return res.status(201).send({link});
         } catch (error) {
-            if (error instanceof GenericException) next(error)
+            const err: GenericException = error as any;
+            if (err.message) next(error)
             next(new GenericException(ERRORS.CONFLICT.URL));
         }
     }
@@ -58,12 +59,13 @@ export class UrlController {
     }
 
     renewUrl: RequestHandler = async (req, res, next) => {
+        const userId = req.user.id;
         const shortUrl = req.params.shortUrl;
 
         try {
-            if (!shortUrl) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
+            if (!shortUrl || !userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
 
-            this.urlService.renewUrl(shortUrl);
+            this.urlService.renewUrl(shortUrl, userId);
             return res.status(202).send();
         } catch (error) {
             next(new GenericException(ERRORS.NOT_FOUND.GENERAL));

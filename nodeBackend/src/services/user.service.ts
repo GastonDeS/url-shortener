@@ -32,12 +32,13 @@ class UserService {
             userId: user._id,
             email: user.email,
             type: user.type,
-            username: user.username
+            username: user.username,
+            urlUsed: user.urlUsed
         } as IPrettyUser;
     }
 
     useUrl = async (userId: string) => {
-        await userModel.findOneAndUpdate({_id: userId}, {$dec: {
+        await userModel.findOneAndUpdate({_id: userId}, {$inc: {
             urlUsed: 1
         }});
     }

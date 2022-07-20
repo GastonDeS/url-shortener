@@ -33,7 +33,7 @@ export class UserController {
     }
 
     getUserById: RequestHandler = async (req, res, next) => {
-        const userId: string = req.params.userId;
+        const userId: string = req.user.id;
 
         try {
             if (!userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
@@ -46,24 +46,25 @@ export class UserController {
     }
 
     updatePlan: RequestHandler = async (req, res, next) => {
-        const userId = req.params.userId;
+        const userId = req.user.id;
 
         try {
             const user = await this.userService.updatePlan(userId);
-            return res.status(200).send({role: user?.type});
+            if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
+            return res.status(200).send({role: user.type});
         } catch (error) {
             next(new GenericException(ERRORS.NOT_FOUND.USER));
         }
     }
 
     getUrlsFromUser: RequestHandler = async (req, res, next) => {
-        const userId = req.params.userId;
+        const userId = req.user.id;
         const after: Date = new Date(req.query.after as string);
         let labels: string | undefined = req.query.labels as string;
 
         const startDate = getStartOfDate(after);
         try {
-            if (!userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
+            if (!userId && userId !== req.params.userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
 
             const urls = await this.urlService.getUrlsFromUserId(userId, startDate, labels?.split(','));
             return res.send(urls);
@@ -74,10 +75,12 @@ export class UserController {
 
     getFullUrlData: RequestHandler = async (req, res, next) => {
         const shortUrl = req.params.shortUrl;
+        const userId = req.user.id;
         let interval: HISTOGRAM_INTERVALS = req.query.interval as HISTOGRAM_INTERVALS;
 
         try {
             if (!interval || interval !== HISTOGRAM_INTERVALS.DAY) interval = HISTOGRAM_INTERVALS.MONTH;
+            if (!shortUrl || !userId) throw new GenericException(ERRORS.BAD_REQUEST.PARAMS);
 
             const urls = await this.urlService.getUrlFullData(shortUrl, interval);
             return res.send(urls);

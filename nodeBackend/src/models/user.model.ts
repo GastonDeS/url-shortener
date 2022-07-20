@@ -17,7 +17,7 @@ const UserSchema: Schema = new mongoose.Schema({
     email: {type: String, unique: true, maxLength: 80},
     password: {type: String},
     type: {type: Number, enum: USER_TYPE, default: USER_TYPE.BASIC},
-    urlUsed: {type: Number, default: 5} 
+    urlUsed: {type: Number, default: 0} 
 });
 
 export default mongoose.model<IUser>('User', UserSchema);
