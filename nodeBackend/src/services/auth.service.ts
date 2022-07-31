@@ -2,6 +2,9 @@ import { ERRORS } from "../constants/error.constant";
 import GenericException from "../exceptions/generic.exception";
 import UserService from "./user.service";
 import * as jwt from 'jsonwebtoken';
+import Crypto from "crypto";
+import Bluebird from "bluebird";
+import { pbkdf2, PBKDF2_HASH, validatePassword } from "../helpers/crypto.helper";
 
 
 class UserAuthService {
@@ -27,7 +30,7 @@ class UserAuthService {
         const user = await this.userService.getUserByEmail(email);
         if (!user) throw new GenericException(ERRORS.NOT_FOUND.USER);
 
-        if (!this.validatePassword(password, user.password!)) throw new GenericException(ERRORS.NOT_FOUND.USER);
+        if (!validatePassword(password, user.password!)) throw new GenericException(ERRORS.NOT_FOUND.USER);
 
         const accessToken = this.signAccessToken(user._id.toString(), user.email);
         const prettyUser = this.userService.prettyUser(user);
@@ -57,10 +60,6 @@ class UserAuthService {
         const payload = {id: userId, email: email};
         const key = this.jwtKey;
         return jwt.sign(payload, key, {issuer: 'byPS', expiresIn: expiryTime });
-    }
-
-    private validatePassword = (password: string, hash: string) => {
-        return password === hash;
     }
 
 }

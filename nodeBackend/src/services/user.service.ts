@@ -1,5 +1,6 @@
 import { ERRORS } from "../constants/error.constant";
 import GenericException from "../exceptions/generic.exception";
+import { hashPassword } from "../helpers/crypto.helper";
 import { IPrettyUser } from "../interfaces/pretty.interface";
 import userModel, { IUser, USER_TYPE } from "../models/user.model";
 
@@ -20,7 +21,8 @@ class UserService {
         password: string, 
         type: USER_TYPE = USER_TYPE.BASIC
     ) => {
-        return this.prettyUser(await userModel.create({username, email, password, type}));
+        const passwordHash = await hashPassword(password);
+        return this.prettyUser(await userModel.create({username, email, password: passwordHash, type}));
     }
 
     updatePlan = async (userId: string) => {
